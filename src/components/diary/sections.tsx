@@ -32,7 +32,6 @@ function toTimeInput(value: string | null | undefined): string {
 export function MorningSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
-      icon="☀️"
       need={need}
       summary={summary}
       title="Morning"
@@ -105,7 +104,6 @@ export function MorningSection({ date, log, need, summary }: SectionProps) {
 export function DaytimeSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
-      icon="🏃"
       need={need}
       summary={summary}
       title="Activity & stress"
@@ -176,7 +174,6 @@ export function DaytimeSection({ date, log, need, summary }: SectionProps) {
 export function ExtraSupplementsSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
-      icon="🧴"
       need={need}
       summary={summary}
       title="Anything else you took"
@@ -199,7 +196,6 @@ export function ExtraSupplementsSection({ date, log, need, summary }: SectionPro
 export function EveningSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
-      icon="🌙"
       need={need}
       summary={summary}
       title="Evening"
@@ -242,7 +238,6 @@ export function EveningSection({ date, log, need, summary }: SectionProps) {
 export function ComplaintsSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
-      icon="🫀"
       need={need}
       summary={summary}
       title="How you felt"

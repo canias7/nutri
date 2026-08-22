@@ -100,7 +100,6 @@ export function FoodSection({
   return (
     <AutosaveSection
       ref={section}
-      icon="🍽️"
       need={need}
       summary={summary}
       title="Food"

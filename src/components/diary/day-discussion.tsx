@@ -47,7 +47,7 @@ export function DayDiscussion({
   }, [hasUnread, dailyLogId])
 
   return (
-    <DiaryRow icon="💬" title="Discussion" need={need} summary={summary}>
+    <DiaryRow title="Discussion" need={need} summary={summary}>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         Questions and answers about this day, kept with the day itself.
       </p>

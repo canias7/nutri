@@ -43,7 +43,6 @@ const RETRY_DELAY_MS = 250
 export function AutosaveSection({
   title,
   description,
-  icon,
   summary,
   need,
   defaultOpen,
@@ -54,8 +53,6 @@ export function AutosaveSection({
 }: {
   title: string
   description?: string
-  /** The emoji on the row. */
-  icon: string
   /** What is already in the section, shown while the row is closed. */
   summary?: ReactNode
   need: SectionNeed
@@ -167,7 +164,6 @@ export function AutosaveSection({
 
   return (
     <DiaryRow
-      icon={icon}
       title={title}
       summary={summary}
       need={need}

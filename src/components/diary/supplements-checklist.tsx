@@ -51,7 +51,7 @@ export function SupplementsChecklist({
   return (
     // The row draws the star itself, from `need` — nothing to answer until there
     // is a list to answer about, which is what makes this one optional.
-    <DiaryRow icon="💊" title="Supplements" need={need} summary={summary}>
+    <DiaryRow title="Supplements" need={need} summary={summary}>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         Tick off what you took from your regular list.
       </p>

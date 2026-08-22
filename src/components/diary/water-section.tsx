@@ -34,7 +34,7 @@ export function WaterSection({
   const pct = Math.min(100, Math.round((totalMl / targetMl) * 100))
 
   return (
-    <DiaryRow icon="💧" title="Water & drinks" need={need} summary={summary}>
+    <DiaryRow title="Water & drinks" need={need} summary={summary}>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         Everything you drink counts toward your target.
       </p>

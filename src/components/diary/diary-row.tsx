@@ -23,7 +23,6 @@ import type { SectionNeed } from '@/lib/diary/completeness'
  * somewhere else.
  */
 export function DiaryRow({
-  icon,
   title,
   summary,
   need,
@@ -31,8 +30,6 @@ export function DiaryRow({
   defaultOpen = false,
   children,
 }: {
-  /** The emoji that marks the row. Decorative — the title carries the meaning. */
-  icon: string
   title: string
   /** What is already in the section, shown while it is closed. */
   summary?: ReactNode
@@ -53,13 +50,6 @@ export function DiaryRow({
       <summary
         className="flex cursor-pointer list-none items-center gap-3 rounded-2xl p-4 outline-none [&::-webkit-details-marker]:hidden focus-visible:ring-2 focus-visible:ring-emerald-500"
       >
-        <span
-          aria-hidden
-          className="grid size-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-lg dark:bg-white/10"
-        >
-          {icon}
-        </span>
-
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="font-semibold">
             {title}
