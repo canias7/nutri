@@ -2,8 +2,8 @@ import { Caveat, Playfair_Display } from 'next/font/google'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { CurvedArrow, Cheer, Heart, Sparks, Stamp, Star, Underline } from '@/components/landing/doodles'
-import { PaperGrain, PhotoSlot, Scrap, TornEdge, TornStrip } from '@/components/landing/paper'
+import { CurvedArrow, Cheer, Heart, Sparks, Star, Underline } from '@/components/landing/doodles'
+import { Cutout, PaperGrain, Scrap, TornEdge, TornStrip } from '@/components/landing/paper'
 import { getViewer, homePathFor } from '@/lib/auth/session'
 
 // Scoped to this page rather than the root layout: the app itself is set in
@@ -25,18 +25,21 @@ const PROMISES = [
     detail:
       'Morning weight, what you actually ate, water, how you slept. Two minutes on your phone, as the day happens.',
     fill: LEAF,
+    art: { src: '/landing/lemon.webp', width: 460, height: 319 },
   },
   {
     title: 'Be understood.',
     detail:
       'Not a calorie total. A specialist reading your real days — the late dinners, the bad nights, the afternoon slump.',
     fill: '#E4DFCE',
+    art: { src: '/landing/hand-holding-greens.webp', width: 460, height: 268 },
   },
   {
     title: 'Feel the change.',
     detail:
       'Recommendations written against what you recorded, and a thread to ask about any day you want to talk through.',
     fill: BLUE,
+    art: { src: '/landing/watering-can-sprout.webp', width: 460, height: 293 },
   },
 ]
 
@@ -95,11 +98,21 @@ export default async function Home() {
         {/* Left cluster. Hidden on phones — a collage needs room, and a phone
             gives the words all of it. */}
         <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[27%] max-w-[400px] lg:block">
-          <Scrap size="large" fill={LEAF} className="left-[-4%] top-[6%] h-[46%] w-[62%]" />
-          <Scrap size="medium" fill={BLUE} className="bottom-[16%] left-[38%] h-[26%] w-[42%]" />
-          <PhotoSlot fill="#D8402C" size="small" className="left-[6%] top-[10%] h-[26%] w-[46%]" />
-          <PhotoSlot fill="#4E7A3A" size="small" className="bottom-[10%] left-[-2%] h-[34%] w-[48%]" />
-          <CurvedArrow className="left-[46%] top-[24%] h-24 w-28" />
+          {/* Paper first, then the things resting on it. Several run off the
+              left edge on purpose — a collage that stops at the margin reads as
+              a row of stickers. */}
+          <Scrap size="large" fill={LEAF} className="left-[-14%] top-[4%] h-[44%] w-[74%]" />
+          <Scrap size="medium" fill={BLUE} className="bottom-[12%] left-[34%] h-[24%] w-[46%]" />
+          <Scrap size="medium" fill="#4E7A3A" className="bottom-[2%] left-[-16%] h-[30%] w-[52%]" />
+
+          <Cutout src="/landing/tomato.webp" width={420} height={460} eager
+            className="left-[-8%] top-[2%] w-[52%]" />
+          <Cutout src="/landing/kale-leaf.webp" width={440} height={652}
+            className="bottom-[-2%] left-[-12%] w-[46%]" />
+          <Cutout src="/landing/cucumber-slice.webp" width={360} height={280}
+            className="bottom-[8%] left-[28%] w-[40%]" />
+
+          <CurvedArrow className="left-[44%] top-[20%] h-24 w-28" />
 
           {/* The kind of note somebody actually writes in a diary. */}
           <div
@@ -119,12 +132,21 @@ export default async function Home() {
 
         {/* Right cluster. */}
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[27%] max-w-[420px] lg:block">
-          <Scrap size="large" fill={BLUE} className="right-[2%] top-[4%] h-[52%] w-[52%]" />
-          <Scrap size="medium" fill={LEAF} className="bottom-[8%] right-[26%] h-[30%] w-[54%]" />
-          {/* The photograph the page is really built around. */}
-          <PhotoSlot fill="#E4DFCE" size="large" className="bottom-[6%] left-[6%] h-[82%] w-[74%]" />
-          <Stamp page={PAGE} className="right-[1%] top-[8%] h-32 w-28 rotate-[6deg]" />
-          <Star className="bottom-[26%] right-[6%] h-8 w-8" color={GREEN} />
+          <Scrap size="large" fill={BLUE} className="right-[-6%] top-[2%] h-[48%] w-[54%]" />
+          <Scrap size="medium" fill={LEAF} className="bottom-[4%] right-[22%] h-[28%] w-[56%]" />
+
+          {/* The photograph the page is really built around, so it is the only
+              one that loads eagerly. */}
+          <Cutout src="/landing/nutritionist-with-bowl.webp" width={660} height={908} eager
+            className="bottom-0 left-[2%] w-[86%]" />
+          <Cutout src="/landing/fresh-food-stamp.webp" width={320} height={355}
+            className="right-[-2%] top-[4%] w-[32%] rotate-[5deg]" />
+          <Cutout src="/landing/botanical-leaves.webp" width={460} height={409}
+            className="right-[-8%] top-[36%] w-[34%]" />
+          <Cutout src="/landing/broccoli.webp" width={360} height={328}
+            className="bottom-[2%] right-[-10%] w-[36%]" />
+
+          <Star className="bottom-[30%] right-[10%] h-8 w-8" color={GREEN} />
         </div>
 
         {/* The words, which sit above all of it. */}
@@ -196,15 +218,21 @@ export default async function Home() {
                 {promise.title}
               </h3>
 
-              {/* Where the cut-out illustration goes; the scrap behind it until
-                  then, so the row reads as composed rather than unfinished. */}
-              <div className="relative mt-7 h-32 w-full max-w-[220px]">
-                <Scrap size="small" fill={promise.fill} className="inset-0 size-full opacity-90" />
-                {index === 0 ? <Underline className="inset-x-6 -top-5 h-4 w-3/4" double weight={4} /> : null}
-                {index === 1 ? <Heart className="-left-3 -top-3 h-7 w-7" /> : null}
+              {/* Torn paper behind, the cut-out resting on it and overhanging
+                  the bottom, which is what stops the pair reading as a card. */}
+              <div className="relative mt-6 h-40 w-full max-w-[260px]">
+                <Scrap size="small" fill={promise.fill} className="inset-x-5 bottom-4 h-[64%]" />
+                <Cutout
+                  src={promise.art.src}
+                  width={promise.art.width}
+                  height={promise.art.height}
+                  className="bottom-0 left-1/2 w-[88%] -translate-x-1/2 drop-shadow-sm"
+                />
+                {index === 0 ? <Underline className="inset-x-6 -top-4 h-4 w-3/4" double weight={4} /> : null}
+                {index === 1 ? <Heart className="-left-2 top-0 h-7 w-7" /> : null}
                 {/* Outside the block, not on it — a blue star on blue paper is
                     an invisible star. */}
-                {index === 2 ? <Star className="-right-4 -top-4 h-8 w-8" /> : null}
+                {index === 2 ? <Star className="-right-3 -top-3 h-8 w-8" /> : null}
               </div>
 
               <p className="mt-7 max-w-xs text-pretty text-[15px] leading-relaxed" style={{ color: BODY }}>

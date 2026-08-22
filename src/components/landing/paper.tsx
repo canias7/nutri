@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 
 /**
  * The paper the landing page is made of.
@@ -23,7 +23,13 @@ const TORN_EDGE_UNDER =
  * `above` is the colour of the sheet being torn; the strip sits at the band's
  * bottom edge and the page behind it shows through the tear.
  */
-export function TornEdge({ above = '#FFFFFF' }: { above?: string }) {
+export function TornEdge({
+  above = '#FFFFFF',
+  below = '#FFFFFF',
+}: {
+  above?: string
+  below?: string
+}) {
   return (
     <svg
       viewBox="0 0 1440 40"
@@ -31,6 +37,10 @@ export function TornEdge({ above = '#FFFFFF' }: { above?: string }) {
       aria-hidden
       className="pointer-events-none absolute inset-x-0 bottom-0 h-6 w-full sm:h-9"
     >
+      {/* Everything below the tear is the next band, painted first so the
+          collage behind cannot leak through the gap — a photograph showing in
+          the strip under a torn edge reads as a clipping bug, not a collage. */}
+      <path d={`${TORN_EDGE_UNDER} L1440,40 L0,40 Z`} fill={below} />
       {/* The under-sheet peeks out of the tear, a shade darker. */}
       <path d={`${TORN_EDGE_UNDER} L1440,0 L0,0 Z`} fill="#E7E2D6" />
       <path d={`${TORN_EDGE} L1440,0 L0,0 Z`} fill={above} />
@@ -107,28 +117,40 @@ export function Scrap({
 }
 
 /**
- * A slot for one of the cut-out photographs.
+ * One of the cut-out photographs.
  *
- * Until a photo is dropped in, it renders as the coloured scrap that sits behind
- * that photo in the collage anyway — so the page is composed rather than full of
- * empty boxes, and adding the image later is one `<img>` inside this.
+ * A plain `img`: these are fixed-size decorations on a page with no image
+ * optimiser configured, so next/image would add a runtime and buy nothing. The
+ * intrinsic size is always given so the collage cannot shift as they load, and
+ * they are decorative, so the alt text is empty and the copy carries the page.
  */
-export function PhotoSlot({
-  fill,
-  size = 'medium',
+export function Cutout({
+  src,
+  width,
+  height,
   className = '',
-  children,
+  eager = false,
 }: {
-  fill: string
-  size?: keyof typeof SCRAPS
+  src: string
+  width: number
+  height: number
   className?: string
-  children?: ReactNode
+  /** Set for the one above the fold; everything else waits. */
+  eager?: boolean
 }) {
   return (
-    <div className={`pointer-events-none absolute ${className}`} aria-hidden>
-      <Scrap size={size} fill={fill} className="inset-0 size-full" />
-      {children}
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      width={width}
+      height={height}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchPriority={eager ? 'high' : 'auto'}
+      className={`pointer-events-none absolute select-none ${className}`}
+    />
   )
 }
 
