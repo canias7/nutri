@@ -30,6 +30,9 @@ const PAD_R = 28
 const PAD_T = 16
 const PAD_B = 16
 
+/** The table lists a week of the plotted fortnight, matching the water table. */
+const TABLE_DAYS = 7
+
 /**
  * Every morning's weight as a distance from where the programme started.
  *
@@ -76,6 +79,11 @@ export function WeightSinceStart({
 
   const band = (VIEW_W - PAD_L - PAD_R) / Math.max(1, points.length)
   const barW = Math.max(3, Math.min(band - 5, 22))
+
+  // Paired before slicing so a point and its delta cannot come apart.
+  const recent = points
+    .map((point, index) => ({ point, delta: deltas[index] }))
+    .slice(-TABLE_DAYS)
 
   const shownDelta = active === null ? null : deltas[active]
   const shown =
@@ -213,9 +221,13 @@ export function WeightSinceStart({
         </text>
       </svg>
 
+      {/* The chart plots a fortnight; the table lists the last week of it, so it
+          stays the length of the water table beside it. Said out loud rather
+          than quietly cut — a table view that shows half the plotted days
+          without mentioning it is worse than one that is honestly shorter. */}
       <details className="text-sm">
         <summary className="cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
-          View as table
+          View last 7 days as table
         </summary>
         <div className="mt-2 overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -227,16 +239,14 @@ export function WeightSinceStart({
               </tr>
             </thead>
             <tbody>
-              {points.map((point, index) => (
+              {recent.map(({ point, delta }) => (
                 <tr key={point.date} className="border-t border-black/5 dark:border-white/10">
                   <td className="py-1.5 pr-4">{formatShortDate(point.date)}</td>
                   <td className="py-1.5 pr-4 tabular-nums">
                     {point.kg === null ? '—' : formatWeight(point.kg, system)}
                   </td>
                   <td className="py-1.5 tabular-nums">
-                    {deltas[index] === null
-                      ? 'Not weighed'
-                      : formatWeightChange(deltas[index], system)}
+                    {delta === null ? 'Not weighed' : formatWeightChange(delta, system)}
                   </td>
                 </tr>
               ))}
