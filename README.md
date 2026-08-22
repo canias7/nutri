@@ -1,6 +1,21 @@
 # nutri
 
-Nutrition, tracked simply. A Next.js app backed by Supabase.
+A nutrition diary with nutritionist coaching, built on Next.js and Supabase.
+
+## What it is
+
+Two sides of one relationship:
+
+- A **client** keeps a daily diary — morning weight and mood, every meal with
+  portion and preparation, water and drinks, activity and stress, supplements
+  taken, evening routine, and how they felt. Plus body measurements every couple
+  of weeks, charted over time.
+- Their **nutritionist** reads those diaries, writes recommendations, manages the
+  client's supplement list, and comments on individual days. Clients reply on the
+  day in question, or in a general thread.
+
+The two are linked by an **invite code** the nutritionist owns and the client
+enters.
 
 ## Stack
 
@@ -36,6 +51,25 @@ Three clients, picked by where the code runs:
 - `src/lib/supabase/client.ts` — Client Components.
 - `src/lib/supabase/server.ts` — Server Components, Server Actions, Route Handlers.
 - `src/lib/supabase/proxy.ts` — session refresh, used by `src/proxy.ts`.
+
+### Schema and migrations
+
+SQL lives in `supabase/migrations/`, applied in filename order. After changing
+the schema, regenerate the types:
+
+```bash
+npx supabase gen types typescript --project-id gezrztmxyxbtbbasvbix \
+  > src/lib/supabase/database.types.ts
+```
+
+Access rules are enforced in the database, not the app. A client reaches only
+their own rows; a nutritionist reaches only the clients linked to them. The
+helper functions the policies call live in a `private` schema so PostgREST does
+not publish them as API endpoints.
+
+`supabase/tests/rls.sql` proves those rules hold — it creates two clients and a
+coach, tries the obvious attacks, and rolls back. Run it after touching any
+policy, trigger, or grant.
 
 ### A note on Proxy
 
