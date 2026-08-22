@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useOptimistic, useTransition } from 'react'
 
-import { OptionalTag } from '@/components/diary/autosave-section'
 import { toggleSupplement } from '@/lib/diary/actions'
 import type { Supplement } from '@/lib/diary/queries'
 
@@ -43,18 +42,15 @@ export function SupplementsChecklist({
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
       <header className="mb-4 flex flex-col gap-0.5">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <span>
-            Supplements
-            {/* Nothing to answer until there is a list to answer about. */}
-            {supplements.length > 0 ? (
-              <>
-                <span aria-hidden className="ml-0.5 text-red-500">*</span>
-                <span className="sr-only"> (required)</span>
-              </>
-            ) : null}
-          </span>
-          {supplements.length === 0 ? <OptionalTag /> : null}
+        <h2 className="font-semibold">
+          Supplements
+          {/* Nothing to answer until there is a list to answer about. */}
+          {supplements.length > 0 ? (
+            <>
+              <span aria-hidden className="ml-0.5 text-red-500">*</span>
+              <span className="sr-only"> (required)</span>
+            </>
+          ) : null}
         </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Tick off what you took from your regular list.

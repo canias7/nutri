@@ -42,7 +42,7 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
   const [comments, coachName, photoUrls] = await Promise.all([
     day.log ? getDayComments(day.log.id, viewer.id) : Promise.resolve([]),
     getCoachName(client.nutritionist_id),
-    signPhotos(day.meals.map((meal) => meal.photo_path).filter(Boolean)),
+    signPhotos(day.meals.flatMap((meal) => meal.photo_paths)),
   ])
   const hasUnread = comments.some((comment) => !comment.mine)
 

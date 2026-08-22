@@ -43,8 +43,6 @@ export function AutosaveSection({
   date,
   action,
   children,
-  hideSavedBadge,
-  optional,
   ref,
 }: {
   title: string
@@ -52,13 +50,6 @@ export function AutosaveSection({
   date: string
   action: (state: SaveState, formData: FormData) => Promise<SaveState>
   children: ReactNode
-  /** Says outright that the section can be left blank. */
-  optional?: boolean
-  /**
-   * Drops the "Saved" badge once a save lands. Failures and work in progress
-   * still show — it is the badge that sits there afterwards that is noise.
-   */
-  hideSavedBadge?: boolean
   /**
    * Exposes a save, for a section whose shape can change without any field
    * changing — removing a row leaves nothing behind to fire an onChange.
@@ -130,20 +121,12 @@ export function AutosaveSection({
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <h2 className="flex items-center gap-2 font-semibold">
-            {title}
-            {optional ? <OptionalTag /> : null}
-          </h2>
+          <h2 className="font-semibold">{title}</h2>
           {description ? (
             <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
           ) : null}
         </div>
-        <SaveStatus
-          pending={pending}
-          dirty={dirty}
-          state={state}
-          hideSaved={hideSavedBadge}
-        />
+        <SaveStatus pending={pending} dirty={dirty} state={state} />
       </header>
 
       <form
@@ -166,24 +149,18 @@ export function AutosaveSection({
   )
 }
 
-export function OptionalTag() {
-  return (
-    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-white/10 dark:text-slate-400">
-      Optional
-    </span>
-  )
-}
-
+/**
+ * Only the states worth acting on. A green "Saved" that lands after every
+ * keystroke and then sits there says nothing the reader did not already assume.
+ */
 function SaveStatus({
   pending,
   dirty,
   state,
-  hideSaved,
 }: {
   pending: boolean
   dirty: boolean
   state: SaveState
-  hideSaved?: boolean
 }) {
   if (state.status === 'error') {
     return (
@@ -195,26 +172,15 @@ function SaveStatus({
 
   if (pending) return <Badge tone="muted">Saving…</Badge>
   if (dirty) return <Badge tone="muted">Unsaved</Badge>
-  if (state.status === 'saved' && !hideSaved) return <Badge tone="good">Saved</Badge>
   return null
 }
 
-function Badge({
-  tone,
-  children,
-}: {
-  tone: 'muted' | 'good'
-  children: ReactNode
-}) {
-  const look =
-    tone === 'good'
-      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-      : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400'
-
+function Badge({ tone, children }: { tone: 'muted'; children: ReactNode }) {
   return (
     <span
       role="status"
-      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${look}`}
+      data-tone={tone}
+      className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:bg-white/10 dark:text-slate-400"
     >
       {children}
     </span>

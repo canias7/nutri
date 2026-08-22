@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 
 import { AutosaveSection, type AutosaveHandle } from '@/components/diary/autosave-section'
 import { Field, Input, Textarea } from '@/components/form-fields'
-import { deleteMealPhoto, uploadMealPhoto } from '@/lib/client/meal-photos'
+import { MealPhotos } from '@/components/diary/meal-photos'
 import { saveFood } from '@/lib/diary/actions'
 import type { LogMeal } from '@/lib/diary/queries'
 
@@ -15,125 +15,8 @@ type Entry = {
   amount: string
   method: string
   eatenAt: string
-  /** Object name in the bucket, or empty. Held in state, not in the DOM. */
-  photoPath: string
-}
-
-/**
- * An optional photo of what was eaten.
- *
- * A picture carries a portion better than "≈250 g" does, and it is the thing a
- * nutritionist reads a food diary for that words are worst at — so it is offered
- * on every entry and required on none.
- */
-function PhotoField({
-  entryKey,
-  path,
-  url,
-  clientId,
-  onChange,
-}: {
-  entryKey: string
-  path: string
-  url: string | undefined
-  clientId: string
-  onChange: (path: string) => void
-}) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  // A local preview covers the gap before the signed URL for a fresh upload
-  // arrives with the next render.
-  const [preview, setPreview] = useState<string | null>(null)
-
-  async function pick(file: File | undefined) {
-    if (!file) return
-    setError(null)
-    setBusy(true)
-
-    const result = await uploadMealPhoto(file, clientId)
-    setBusy(false)
-
-    if (!result.ok) {
-      setError(result.message)
-      return
-    }
-    if (path) void deleteMealPhoto(path)
-    setPreview(URL.createObjectURL(file))
-    onChange(result.path)
-  }
-
-  function clear() {
-    if (path) void deleteMealPhoto(path)
-    setPreview(null)
-    onChange('')
-  }
-
-  const shown = preview ?? url
-
-  return (
-    <div className="flex flex-col gap-2">
-      {shown ? (
-        <div className="flex items-start gap-3">
-          {/* Plain img: these are signed URLs on a bucket the optimiser has no
-              credentials for, and they expire. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={shown}
-            alt="What you ate"
-            className="size-24 shrink-0 rounded-xl object-cover ring-1 ring-black/10 dark:ring-white/10"
-          />
-          <button
-            type="button"
-            onClick={clear}
-            className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-950/40"
-          >
-            Remove photo
-          </button>
-        </div>
-      ) : (
-        <label
-          className={`flex w-fit cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-black/15 px-3.5 py-2 text-sm font-medium transition dark:border-white/20 ${
-            busy
-              ? 'cursor-wait text-slate-400'
-              : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5'
-          }`}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.1-2h8.4l1.1 2h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z" />
-            <circle cx="12" cy="12.5" r="3.2" />
-          </svg>
-          {busy ? 'Uploading…' : 'Add a photo'}
-          <span className="text-xs font-normal text-slate-400">Optional</span>
-          <input
-            id={`photo-${entryKey}`}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-            className="sr-only"
-            disabled={busy}
-            onChange={(event) => {
-              void pick(event.target.files?.[0])
-              event.target.value = ''
-            }}
-          />
-        </label>
-      )}
-
-      {error ? (
-        <p role="alert" className="text-xs font-medium text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  )
+  /** Object names in the bucket. Held in state, serialised into one field. */
+  photoPaths: string[]
 }
 
 /** Times come back from Postgres as HH:MM:SS; the input wants HH:MM. */
@@ -141,7 +24,7 @@ function toTimeInput(value: string | null | undefined): string {
   return value ? value.slice(0, 5) : ''
 }
 
-const BLANK = { eaten: '', amount: '', method: '', eatenAt: '', photoPath: '' }
+const BLANK = { eaten: '', amount: '', method: '', eatenAt: '', photoPaths: [] as string[] }
 
 function fromMeals(meals: LogMeal[]): Entry[] {
   if (meals.length === 0) return [{ key: 'blank', ...BLANK }]
@@ -152,7 +35,7 @@ function fromMeals(meals: LogMeal[]): Entry[] {
     amount: meal.amount,
     method: meal.method,
     eatenAt: toTimeInput(meal.eaten_at),
-    photoPath: meal.photo_path,
+    photoPaths: meal.photo_paths,
   }))
 }
 
@@ -186,9 +69,9 @@ export function FoodSection({
     setEntries((current) => [...current, { key: `added-${added.current}`, ...BLANK }])
   }
 
-  function setPhoto(key: string, photoPath: string) {
+  function setPhotos(key: string, photoPaths: string[]) {
     setEntries((current) =>
-      current.map((entry) => (entry.key === key ? { ...entry, photoPath } : entry)),
+      current.map((entry) => (entry.key === key ? { ...entry, photoPaths } : entry)),
     )
     // The path lives in state, so nothing in the form changed — the save has to
     // be asked for, as it does when a row leaves.
@@ -212,7 +95,6 @@ export function FoodSection({
       ref={section}
       title="Food"
       description="Everything you ate today, in the order you ate it."
-      hideSavedBadge
       date={date}
       action={saveFood}
     >
@@ -274,13 +156,19 @@ export function FoodSection({
             </Field>
           </div>
 
-          <input type="hidden" name="photoPath" value={entry.photoPath} />
-          <PhotoField
+          {/* One field per entry, newline separated: a flat repeated field
+              could not say which of five photos belonged to which entry. */}
+          <input
+            type="hidden"
+            name="photoPaths"
+            value={entry.photoPaths.join('\n')}
+          />
+          <MealPhotos
             entryKey={entry.key}
-            path={entry.photoPath}
-            url={photoUrls[entry.photoPath]}
+            paths={entry.photoPaths}
+            urls={photoUrls}
             clientId={clientId}
-            onChange={(photoPath) => setPhoto(entry.key, photoPath)}
+            onChange={(paths) => setPhotos(entry.key, paths)}
           />
         </div>
       ))}

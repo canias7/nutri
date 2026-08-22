@@ -7,6 +7,7 @@ import { field } from '@/lib/forms'
 import { createClient } from '@/lib/supabase/server'
 import type { TablesUpdate } from '@/lib/supabase/database.types'
 
+import { MAX_MEAL_PHOTOS } from './meal-photos'
 import { isValidDateParam } from './date'
 import type { SaveState } from './save-state'
 
@@ -163,7 +164,11 @@ export async function saveFood(
   const amount = formData.getAll('amount').map(String)
   const method = formData.getAll('method').map(String)
   const eatenAt = formData.getAll('eatenAt').map(String)
-  const photoPath = formData.getAll('photoPath').map(String)
+  // One field per entry holding that entry's photos, newline separated — a flat
+  // repeated field could not say which of five belonged to which entry.
+  const photos = formData.getAll('photoPaths').map((value) =>
+    String(value).split('\n').map((path) => path.trim()).filter(Boolean).slice(0, MAX_MEAL_PHOTOS),
+  )
 
   const log = await ensureLog(date)
   if (!log) return failed
@@ -175,14 +180,18 @@ export async function saveFood(
     amount: (amount[index] ?? '').trim(),
     method: (method[index] ?? '').trim(),
     eaten_at: eatenAt[index] ? eatenAt[index] : null,
-    photo_path: (photoPath[index] ?? '').trim(),
+    photo_paths: photos[index] ?? [],
   }))
 
   // An entry with nothing in it is not an entry. Trailing blanks are simply not
   // written, so opening the section and closing it again leaves no trace.
   const filled = rows.filter(
     (row) =>
-      row.eaten || row.amount || row.method || row.eaten_at || row.photo_path,
+      row.eaten ||
+      row.amount ||
+      row.method ||
+      row.eaten_at ||
+      row.photo_paths.length > 0,
   )
   // Positions have to stay dense, or the unique key leaves gaps that the next
   // save collides with.
@@ -194,7 +203,7 @@ export async function saveFood(
   // drops can be taken out of the bucket too rather than left orphaned.
   const { data: before } = await supabase
     .from('log_meals')
-    .select('photo_path')
+    .select('photo_paths')
     .eq('daily_log_id', log.id)
 
   if (dense.length > 0) {
@@ -212,9 +221,9 @@ export async function saveFood(
 
   if (pruneError) return failed
 
-  const kept = new Set(dense.map((row) => row.photo_path).filter(Boolean))
+  const kept = new Set(dense.flatMap((row) => row.photo_paths))
   const orphaned = (before ?? [])
-    .map((row) => row.photo_path)
+    .flatMap((row) => row.photo_paths)
     .filter((path) => path && !kept.has(path))
 
   // Best effort: a file left behind costs a few kilobytes, and a failure here

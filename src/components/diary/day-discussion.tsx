@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef } from 'react'
 
-import { OptionalTag } from '@/components/diary/autosave-section'
 import { FormMessage, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
 import { markDayCommentsRead, postDayComment } from '@/lib/diary/comments'
@@ -37,10 +36,7 @@ export function DayDiscussion({
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
       <header className="mb-4 flex flex-col gap-0.5">
-        <h2 className="flex items-center gap-2 font-semibold">
-          Discussion
-          <OptionalTag />
-        </h2>
+        <h2 className="font-semibold">Discussion</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Questions and answers about this day, kept with the day itself.
         </p>
@@ -100,7 +96,6 @@ export function DayDiscussion({
           placeholder="Ask a question or leave a note about this day…"
           aria-label="Your comment on this day"
           invalid={Boolean(state.fieldErrors?.body)}
-          required
         />
         {state.fieldErrors?.body ? (
           <p className="text-xs font-medium text-red-600 dark:text-red-400">
@@ -108,9 +103,7 @@ export function DayDiscussion({
           </p>
         ) : null}
 
-        <SubmitButton pendingLabel="Posting…" variant="ghost">
-          Post
-        </SubmitButton>
+        <SubmitButton pendingLabel="Posting…">Post</SubmitButton>
       </form>
     </section>
   )

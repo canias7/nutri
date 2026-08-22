@@ -24,7 +24,6 @@ export function WaterSection({
   const formRef = useRef<HTMLFormElement>(null)
 
   const pct = Math.min(100, Math.round((totalMl / targetMl) * 100))
-  const metGoal = totalMl >= targetMl
 
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
@@ -48,11 +47,7 @@ export function WaterSection({
               / {formatNumber(targetMl)} ml
             </span>
           </span>
-          {metGoal ? (
-            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-              Goal met
-            </span>
-          ) : null}
+
         </div>
 
         <div

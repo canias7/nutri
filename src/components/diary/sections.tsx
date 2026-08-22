@@ -96,7 +96,6 @@ export function DaytimeSection({ date, log }: SectionProps) {
       description="Movement, time outdoors, and how the day felt."
       date={date}
       action={saveDaytime}
-      optional
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Activity" htmlFor="activityType">
@@ -165,7 +164,6 @@ export function ExtraSupplementsSection({ date, log }: SectionProps) {
       description="One-offs that are not on your regular list."
       date={date}
       action={saveExtraSupplements}
-      optional
     >
       <Field label="Other supplements" htmlFor="extraSupplements">
         <Input
@@ -226,7 +224,6 @@ export function ComplaintsSection({ date, log }: SectionProps) {
       description="Symptoms and changes, however small. This is what your nutritionist reads most closely."
       date={date}
       action={saveComplaints}
-      optional
     >
       <Field label="Digestion & gut" htmlFor="complaintDigestion">
         <Textarea

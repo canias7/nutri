@@ -111,18 +111,20 @@ something else on purpose, so the difference does not keep getting read as a gap
 - **One food list, not five named meals.** The reference gives breakfast, second
   breakfast, lunch, snack and dinner a box each. On most days that is four empty
   boxes, and there is nowhere to put a sixth meal. Ours is a single section with
-  an entry per thing eaten, added as the day goes — each with an optional photo,
-  which carries a portion better than "≈250 g" does.
+  an entry per thing eaten, added as the day goes — each taking up to five
+  photos, which carry a portion better than "≈250 g" does. Tapping one opens it
+  full size.
 - **A week strip, not a heading with arrows.** The day picker shows the seven
   days of the week being read; arrows still step one day and carry into the week
   either side. There is no "log for another date" jump and no step counter — a
   diary that scores you out of six invites filling boxes rather than answering
   them.
-- **Required answers are named, never enforced.** Wake-up time, morning weight,
-  energy level, a drink, what you ate and when, and asleep-at carry a marker, and
-  their section says "Needs an answer" until it has one. Nothing is blocked: a
-  half-filled day still saves, which is the whole point of autosaving. The rest
-  say "Optional" outright rather than leaving the reader to guess.
+- **Required answers are marked, never enforced.** Wake-up time, morning weight,
+  energy level, a drink, what you ate and when, and asleep-at carry a red
+  asterisk. Nothing is blocked: a half-filled day still saves, which is the whole
+  point of autosaving. Everything unmarked is optional, and says so by saying
+  nothing — no per-section badges, and no "Saved" pill landing after every
+  keystroke.
 - **Every drink counts toward the water target.** The reference counts clean
   water only, and asks per drink. A total that disagrees with the list above it
   is worth less than the distinction it was drawing.
