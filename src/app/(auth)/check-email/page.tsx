@@ -6,8 +6,9 @@ export const metadata: Metadata = { title: 'Check your email · nutri' }
 export default async function CheckEmailPage({
   searchParams,
 }: PageProps<'/check-email'>) {
-  const { email } = await searchParams
+  const { email, reset } = await searchParams
   const address = typeof email === 'string' ? email : null
+  const isReset = reset === '1'
 
   return (
     <div className="flex flex-col gap-4 text-center">
@@ -21,16 +22,20 @@ export default async function CheckEmailPage({
         </svg>
       </span>
 
-      <h1 className="text-xl font-semibold tracking-tight">Confirm your email</h1>
+      <h1 className="text-xl font-semibold tracking-tight">
+        {isReset ? 'Check your inbox' : 'Confirm your email'}
+      </h1>
 
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        We sent a confirmation link to{' '}
+        {isReset ? 'We sent a reset link to ' : 'We sent a confirmation link to '}
         {address ? (
           <span className="font-semibold text-slate-800 dark:text-slate-100">{address}</span>
         ) : (
           'your inbox'
         )}
-        . Open it to finish setting up your account.
+        {isReset
+          ? '. Open it to choose a new password.'
+          : '. Open it to finish setting up your account.'}
       </p>
 
       <p className="text-xs text-slate-500 dark:text-slate-400">

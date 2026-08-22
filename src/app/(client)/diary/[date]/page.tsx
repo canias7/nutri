@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+
 
 import {
   ComplaintsSection,
@@ -37,7 +37,15 @@ export const metadata: Metadata = { title: 'Diary · nutri' }
 
 export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) {
   const { date } = await params
-  if (!isValidDateParam(date)) notFound()
+
+  // Rendered inline rather than through notFound(). This segment streams behind
+  // its loading skeleton, so by the time notFound() could fire the response has
+  // already gone out as a 200 — the reader gets a broken suspense boundary
+  // instead of an answer. A mistyped or stale date is best answered with a way
+  // back, not an error.
+  if (!isValidDateParam(date)) {
+    return <InvalidDate value={date} />
+  }
 
   const { viewer, client } = await requireClient()
   const [day, today] = await Promise.all([
@@ -220,4 +228,30 @@ async function getCoachName(nutritionistId: string | null): Promise<string | nul
     .eq('id', nutritionistId)
     .maybeSingle()
   return data?.full_name || null
+}
+
+function InvalidDate({ value }: { value: string }) {
+  return (
+    <div className="flex flex-col items-start gap-3 py-8">
+      <h1 className="text-xl font-semibold tracking-tight">That isn&apos;t a date</h1>
+      <p className="text-sm text-slate-600 dark:text-slate-400">
+        <span className="font-mono">{value.slice(0, 40)}</span> is not a day we can
+        open. Dates look like 2026-08-22.
+      </p>
+      <div className="flex gap-2">
+        <Link
+          href="/diary"
+          className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+        >
+          Today&apos;s diary
+        </Link>
+        <Link
+          href="/history"
+          className="rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-50 dark:border-white/15 dark:hover:bg-white/5"
+        >
+          Pick from history
+        </Link>
+      </div>
+    </div>
+  )
 }

@@ -7,7 +7,12 @@ import { getSiteUrl } from '@/lib/site-url'
 import { createClient } from '@/lib/supabase/server'
 
 import { homePathFor } from './session'
-import { signInSchema, signUpSchema } from './schemas'
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  signInSchema,
+  signUpSchema,
+} from './schemas'
 
 export async function signUp(
   _previous: FormState,
@@ -112,4 +117,63 @@ function describeSignUpError(message: string): string {
     return 'Too many attempts just now. Wait a minute and try again.'
   }
   return message
+}
+
+/**
+ * Sends a password reset link.
+ *
+ * Always reports success, whatever the outcome. Saying "no account with that
+ * email" here would turn the form into the account-enumeration oracle the login
+ * form deliberately is not.
+ */
+export async function requestPasswordReset(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const values = { email: field(formData, 'email') }
+
+  const parsed = forgotPasswordSchema.safeParse(values)
+  if (!parsed.success) return invalid(parsed.error, values)
+
+  const supabase = await createClient()
+  const siteUrl = await getSiteUrl()
+
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`,
+  })
+
+  redirect(`/check-email?email=${encodeURIComponent(parsed.data.email)}&reset=1`)
+}
+
+/** Sets a new password. Only reachable with the recovery session in place. */
+export async function resetPassword(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: String(formData.get('password') ?? ''),
+    confirm: String(formData.get('confirm') ?? ''),
+  })
+  if (!parsed.success) return invalid(parsed.error)
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return failed('That reset link has expired. Ask for a new one.')
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) {
+    return failed(
+      /weak|short/i.test(error.message)
+        ? 'Password is too weak. Use at least 6 characters.'
+        : 'Could not change the password. Try again.',
+    )
+  }
+
+  const { data: profile } = await supabase.from('profiles').select('role').single()
+  redirect(homePathFor(profile?.role ?? 'client'))
 }

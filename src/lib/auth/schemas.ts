@@ -20,3 +20,17 @@ export const signInSchema = z.object({
 
 export type SignUpInput = z.infer<typeof signUpSchema>
 export type SignInInput = z.infer<typeof signInSchema>
+
+export const forgotPasswordSchema = z.object({
+  email: z.email('Enter a valid email address'),
+})
+
+export const resetPasswordSchema = z
+  .object({
+    password,
+    confirm: z.string(),
+  })
+  .refine((value) => value.password === value.confirm, {
+    message: 'Both passwords need to match',
+    path: ['confirm'],
+  })

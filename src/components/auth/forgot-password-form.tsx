@@ -5,11 +5,11 @@ import { useActionState } from 'react'
 
 import { Field, FormMessage, Input } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
-import { signIn } from '@/lib/auth/actions'
+import { requestPasswordReset } from '@/lib/auth/actions'
 import { idleFormState } from '@/lib/forms'
 
-export function SignInForm() {
-  const [state, action] = useActionState(signIn, idleFormState)
+export function ForgotPasswordForm() {
+  const [state, action] = useActionState(requestPasswordReset, idleFormState)
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -28,36 +28,14 @@ export function SignInForm() {
         />
       </Field>
 
-      <Field label="Password" htmlFor="password" errors={state.fieldErrors?.password}>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          invalid={Boolean(state.fieldErrors?.password)}
-          required
-        />
-      </Field>
-
-      <div className="-mt-1 flex justify-end">
-        <Link
-          href="/forgot-password"
-          className="text-xs font-medium text-slate-600 underline-offset-4 hover:underline dark:text-slate-400"
-        >
-          Forgotten your password?
-        </Link>
-      </div>
-
-      <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
+      <SubmitButton pendingLabel="Sending…">Send reset link</SubmitButton>
 
       <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-        New here?{' '}
         <Link
-          href="/signup"
+          href="/login"
           className="font-semibold text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
         >
-          Create an account
+          Back to sign in
         </Link>
       </p>
     </form>

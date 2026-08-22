@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { SessionRefresher } from "@/components/session-refresher";
@@ -15,9 +15,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "Keep an honest record of how you eat, sleep, move and feel. Your nutritionist reads it and coaches you against it.";
+
 export const metadata: Metadata = {
-  title: "nutri",
-  description: "Nutrition, tracked simply.",
+  // A template means every page's own title still ends up branded.
+  title: { default: "nutri", template: "%s" },
+  description: DESCRIPTION,
+  applicationName: "nutri",
+  appleWebApp: { capable: true, title: "nutri", statusBarStyle: "black-translucent" },
+  openGraph: {
+    type: "website",
+    siteName: "nutri",
+    title: "nutri — nutrition diary & coaching",
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary", title: "nutri", description: DESCRIPTION },
+  // A diary is nobody else's business; keep it out of search results.
+  robots: { index: false, follow: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#059669",
+  // Portrait phone in one hand, so the layout is built for it.
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
