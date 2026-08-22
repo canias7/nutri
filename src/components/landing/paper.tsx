@@ -23,7 +23,7 @@ const TORN_EDGE_UNDER =
  * `above` is the colour of the sheet being torn; the strip sits at the band's
  * bottom edge and the page behind it shows through the tear.
  */
-export function TornEdge({ above = '#FBFAF6' }: { above?: string }) {
+export function TornEdge({ above = '#FFFFFF' }: { above?: string }) {
   return (
     <svg
       viewBox="0 0 1440 40"
@@ -32,7 +32,7 @@ export function TornEdge({ above = '#FBFAF6' }: { above?: string }) {
       className="pointer-events-none absolute inset-x-0 bottom-0 h-6 w-full sm:h-9"
     >
       {/* The under-sheet peeks out of the tear, a shade darker. */}
-      <path d={`${TORN_EDGE_UNDER} L1440,0 L0,0 Z`} fill="#EDE7DA" />
+      <path d={`${TORN_EDGE_UNDER} L1440,0 L0,0 Z`} fill="#E7E2D6" />
       <path d={`${TORN_EDGE} L1440,0 L0,0 Z`} fill={above} />
     </svg>
   )
@@ -53,6 +53,28 @@ const SCRAPS = {
     d: 'M0,0.2 L18,0.3 L36,1.5 L54,5.4 L72,4.5 L90,3 L108,1.5 L126,6.7 L123.5,0 L124,18 L128.4,36 L123.3,54 L129.4,72 L126.7,90 L123.2,108 L130,102.1 L112,103.8 L94,110 L76,105.7 L58,102.8 L40,109.4 L22,102.1 L4,105 L6.8,110 L1.1,92 L7.7,74 L2.1,56 L0.7,38 L6.9,20 L1.9,2 Z',
   },
 } as const
+
+/**
+ * The button: a strip ripped off a sheet, ragged along both long edges.
+ *
+ * Its own outline rather than a reused scrap — a button wants the tear to read
+ * at the size of a line of text, so the fibre is coarser than the collage's.
+ */
+const BUTTON_STRIP =
+  'M0,9.7 L15,4 L30,17.9 L45,6.8 L60,15.2 L75,6.1 L90,14.2 L105,11.4 L120,14.6 L135,7.7 L150,2 L165,14.3 L180,10 L195,2.2 L210,11.9 L225,11 L240,8.4 L255,0.8 L270,19.8 L285,10.8 L300,7.3 L300,92 L300,83.9 L285,89 L270,88.4 L255,82.2 L240,96.4 L225,84.2 L210,80.9 L195,92.8 L180,95.4 L165,95.7 L150,82.1 L135,86.3 L120,87.1 L105,93.2 L90,97.6 L75,83.1 L60,84.5 L45,82.4 L30,80.4 L15,80 L0,92.6 Z'
+
+export function TornStrip({ fill, className = '' }: { fill: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 300 100"
+      preserveAspectRatio="none"
+      aria-hidden
+      className={`pointer-events-none absolute ${className}`}
+    >
+      <path d={BUTTON_STRIP} fill={fill} />
+    </svg>
+  )
+}
 
 /**
  * A scrap of coloured paper, for the collage behind the words.

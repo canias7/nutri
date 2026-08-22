@@ -71,8 +71,19 @@ export function Sparks({ className = '', color = RED }: Mark & { color?: string 
   )
 }
 
-/** The scribble under a word you meant. Two passes, because one is never enough. */
-export function Underline({ className = '', color = GREEN }: Mark & { color?: string }) {
+/**
+ * The stroke under a word you meant.
+ *
+ * One pass by default — a single confident swash, drawn slightly uphill the way
+ * a hand does it. `double` adds the second, lighter pass for smaller headings,
+ * where one stroke alone reads as a rule rather than a mark.
+ */
+export function Underline({
+  className = '',
+  color = GREEN,
+  double = false,
+  weight = 7,
+}: Mark & { color?: string; double?: boolean; weight?: number }) {
   return (
     <svg
       viewBox="0 0 300 20"
@@ -82,18 +93,20 @@ export function Underline({ className = '', color = GREEN }: Mark & { color?: st
       className={`pointer-events-none absolute ${className}`}
     >
       <path
-        d="M4 12c48-6 104-8 152-7 48 1 96 4 144 9"
+        d="M3 14C60 7 132 4 189 5c40 1 78 3 108 6"
         stroke={color}
-        strokeWidth="3.4"
+        strokeWidth={weight}
         strokeLinecap="round"
       />
-      <path
-        d="M14 17c46-4 100-5 148-4 44 1 88 3 130 6"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
+      {double ? (
+        <path
+          d="M16 19c44-4 98-5 146-4 42 1 84 3 126 5"
+          stroke={color}
+          strokeWidth={weight * 0.45}
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+      ) : null}
     </svg>
   )
 }
@@ -123,7 +136,7 @@ export function Cheer({ className = '', flip = false }: Mark & { flip?: boolean 
  */
 export function Stamp({
   className = '',
-  page = '#FBFAF6',
+  page = '#FFFFFF',
   top = 'FRESH',
   bottom = 'GOOD FOOD',
 }: Mark & { page?: string; top?: string; bottom?: string }) {
@@ -141,6 +154,7 @@ export function Stamp({
     <svg viewBox="0 0 120 140" aria-hidden className={`pointer-events-none absolute ${className}`}>
       <rect x="2" y="2" width="116" height="136" fill="#F3EFE3" />
       <rect x="9" y="9" width="102" height="122" fill="none" stroke="#C8BFA6" strokeWidth="1.2" />
+      {perfs}
 
       {/* A radish: enough of one to be read as a drawing of a radish. */}
       <path d="M60 62c11 0 19 9 19 20s-9 21-19 21-19-10-19-21 8-20 19-20z" fill={RED} />

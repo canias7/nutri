@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { CurvedArrow, Cheer, Heart, Sparks, Stamp, Star, Underline } from '@/components/landing/doodles'
-import { PaperGrain, PhotoSlot, Scrap, TornEdge } from '@/components/landing/paper'
+import { PaperGrain, PhotoSlot, Scrap, TornEdge, TornStrip } from '@/components/landing/paper'
 import { getViewer, homePathFor } from '@/lib/auth/session'
 
 // Scoped to this page rather than the root layout: the app itself is set in
@@ -12,7 +12,7 @@ const display = Playfair_Display({ subsets: ['latin'], weight: ['700', '900'] })
 const hand = Caveat({ subsets: ['latin'], weight: ['400', '600'] })
 
 /** The collage's palette. Paper, ink, and three things you'd find in a fridge. */
-const PAGE = '#FBFAF6'
+const PAGE = '#FFFFFF'
 const INK = '#14110E'
 const GREEN = '#1B5E3A'
 const LEAF = '#A8C58B'
@@ -53,17 +53,24 @@ export default async function Home() {
     >
       <PaperGrain />
 
-      <header className="relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4">
-        <span className={`${display.className} text-2xl font-black tracking-tight`} style={{ color: GREEN }}>
+      <header
+        className="relative z-20 border-b"
+        style={{ borderColor: '#E8E4DA' }}
+      >
+       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
+        <span
+          className={`${display.className} text-3xl font-black leading-none tracking-tight sm:text-[2.1rem]`}
+          style={{ color: GREEN }}
+        >
           nutri
           {/* The sprout on the ‘i’, which is where the logo's leaf lives. */}
-          <svg viewBox="0 0 20 14" aria-hidden className="ml-0.5 inline-block h-3 w-4 align-super">
+          <svg viewBox="0 0 20 14" aria-hidden className="ml-0.5 inline-block h-4 w-5 align-super">
             <path d="M10 13C10 6 14 2 19 1c0 7-4 11-9 12z" fill={GREEN} />
             <path d="M10 13C10 7 6 3 1 2c0 6 4 10 9 11z" fill={LEAF} />
           </svg>
         </span>
 
-        <nav className="flex items-center gap-5 text-sm font-semibold sm:gap-7">
+        <nav className="flex items-center gap-5 text-[15px] font-semibold sm:gap-7">
           {/* Only destinations that exist. A nav bar of dead links is worse than
               a short one. */}
           <a href="#how" className="hidden hover:underline sm:inline" style={{ color: BODY }}>
@@ -80,13 +87,14 @@ export default async function Home() {
             Start free
           </Link>
         </nav>
+       </div>
       </header>
 
       {/* ------------------------------- hero ------------------------------- */}
       <section className="relative isolate overflow-hidden px-5 pb-16 pt-10 sm:pb-24 sm:pt-14">
         {/* Left cluster. Hidden on phones — a collage needs room, and a phone
             gives the words all of it. */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[30%] max-w-[420px] lg:block">
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[27%] max-w-[400px] lg:block">
           <Scrap size="large" fill={LEAF} className="left-[-4%] top-[6%] h-[46%] w-[62%]" />
           <Scrap size="medium" fill={BLUE} className="bottom-[16%] left-[38%] h-[26%] w-[42%]" />
           <PhotoSlot fill="#D8402C" size="small" className="left-[6%] top-[10%] h-[26%] w-[46%]" />
@@ -110,7 +118,7 @@ export default async function Home() {
         </div>
 
         {/* Right cluster. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] max-w-[440px] lg:block">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[27%] max-w-[420px] lg:block">
           <Scrap size="large" fill={BLUE} className="right-[2%] top-[4%] h-[52%] w-[52%]" />
           <Scrap size="medium" fill={LEAF} className="bottom-[8%] right-[26%] h-[30%] w-[54%]" />
           {/* The photograph the page is really built around. */}
@@ -120,22 +128,28 @@ export default async function Home() {
         </div>
 
         {/* The words, which sit above all of it. */}
-        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center text-center">
+        <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
           <Sparks className="left-[8%] top-[-8px] h-8 w-11 sm:left-[14%]" />
           <Star className="right-[4%] top-6 hidden h-9 w-9 sm:block" />
 
+          {/* Short lines on purpose. The reference's drama comes from setting
+              eleven characters at 7rem; a longer line has to shrink to clear the
+              collage, and shrinking is what stops it looking like the reference. */}
           <h1
-            className={`${display.className} text-[13vw] font-black leading-[0.92] tracking-tight sm:text-6xl lg:text-7xl`}
+            className={`${display.className} text-[16vw] font-black leading-[0.86] tracking-[-0.02em] sm:text-[6rem] lg:text-[7rem]`}
           >
-            Less counting.
-            <span className="relative mt-1 block">
-              More knowing.
-              <Underline className="inset-x-[6%] -bottom-2 h-4 w-[88%]" />
+            Count less.
+            {/* The padding is what the swash hangs from: with leading below 1 the
+                glyphs overflow their line box, so `bottom` alone lands halfway up
+                the letters. */}
+            <span className="relative block pb-5 sm:pb-8">
+              Know more.
+              <Underline className="inset-x-[6%] bottom-0 h-5 w-[88%] sm:h-7" weight={9} />
             </span>
           </h1>
 
           <p
-            className="mt-7 max-w-md text-pretty text-lg leading-relaxed sm:mt-9"
+            className="mt-4 max-w-md text-pretty text-lg leading-relaxed sm:mt-6"
             style={{ color: BODY }}
           >
             Write down how you eat, sleep and feel. A nutritionist reads every day
@@ -150,7 +164,7 @@ export default async function Home() {
               className="relative inline-flex items-center justify-center px-14 py-5 text-lg font-semibold text-white transition hover:brightness-110"
             >
               {/* The button is a torn strip of green paper, not a rounded rect. */}
-              <Scrap size="medium" fill={GREEN} className="inset-0 size-full" />
+              <TornStrip fill={GREEN} className="inset-0 size-full" />
               <span className="relative">Start your diary</span>
             </Link>
           </div>
@@ -186,7 +200,7 @@ export default async function Home() {
                   then, so the row reads as composed rather than unfinished. */}
               <div className="relative mt-7 h-32 w-full max-w-[220px]">
                 <Scrap size="small" fill={promise.fill} className="inset-0 size-full opacity-90" />
-                {index === 0 ? <Underline className="inset-x-6 -top-4 h-4 w-3/4" /> : null}
+                {index === 0 ? <Underline className="inset-x-6 -top-5 h-4 w-3/4" double weight={4} /> : null}
                 {index === 1 ? <Heart className="-left-3 -top-3 h-7 w-7" /> : null}
                 {/* Outside the block, not on it — a blue star on blue paper is
                     an invisible star. */}
