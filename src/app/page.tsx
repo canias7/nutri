@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Caveat, Playfair_Display } from 'next/font/google'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -18,6 +19,16 @@ const GREEN = '#1B5E3A'
 const LEAF = '#A8C58B'
 const BLUE = '#2B4CC4'
 const BODY = '#57534B'
+
+/**
+ * The root layout marks the whole app `noindex` — a diary is nobody else's
+ * business. The front door is the exception, and metadata merges shallowly from
+ * the layout down, so replacing the key here covers this page and no other.
+ */
+export const metadata: Metadata = {
+  title: 'nutri — a nutrition diary your nutritionist actually reads',
+  robots: { index: true, follow: true },
+}
 
 const PROMISES = [
   {
