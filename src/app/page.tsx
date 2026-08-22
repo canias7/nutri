@@ -34,21 +34,21 @@ const PROMISES = [
   {
     title: 'Write it down.',
     detail:
-      'Morning weight, what you actually ate, water, how you slept. Two minutes on your phone, as the day happens.',
+      'Morning weight, what you ate, water, how you slept — two minutes on your phone.',
     fill: LEAF,
     art: { src: '/landing/lemon.webp', width: 460, height: 319 },
   },
   {
     title: 'Be understood.',
     detail:
-      'Not a calorie total. A specialist reading your real days — the late dinners, the bad nights, the afternoon slump.',
+      'Not a calorie total. A specialist reading your real days.',
     fill: '#E4DFCE',
     art: { src: '/landing/hand-holding-greens.webp', width: 460, height: 268 },
   },
   {
     title: 'Feel the change.',
     detail:
-      'Recommendations written against what you recorded, and a thread to ask about any day you want to talk through.',
+      'Advice written against what you recorded, and a thread to ask about any day.',
     fill: BLUE,
     art: { src: '/landing/watering-can-sprout.webp', width: 460, height: 293 },
   },
@@ -61,14 +61,18 @@ export default async function Home() {
   return (
     // The page paints its own ground and keeps it in every theme. A collage of
     // torn paper has one lighting condition; inverted, it is a different object.
+    // Locked to one screen from lg up, so the three columns are on the page you
+    // land on rather than a scroll away. Below that it scrolls: a phone cannot
+    // hold a hero and three columns at once, and pretending otherwise just
+    // crushes both.
     <div
-      className="relative isolate flex flex-1 flex-col overflow-hidden"
+      className="relative isolate flex flex-1 flex-col overflow-hidden lg:h-dvh lg:max-h-dvh"
       style={{ background: PAGE, color: INK }}
     >
       <PaperGrain />
 
       <header
-        className="relative z-20 border-b"
+        className="relative z-20 shrink-0 border-b"
         style={{ borderColor: '#E8E4DA' }}
       >
        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
@@ -105,7 +109,7 @@ export default async function Home() {
       </header>
 
       {/* ------------------------------- hero ------------------------------- */}
-      <section className="relative isolate overflow-hidden px-5 pb-16 pt-10 sm:pb-24 sm:pt-14">
+      <section className="relative isolate flex min-h-0 flex-1 flex-col justify-center overflow-hidden px-5 pb-14 pt-8 sm:pb-16 sm:pt-10">
         {/* Left cluster. Hidden on phones — a collage needs room, and a phone
             gives the words all of it. */}
         <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[27%] max-w-[400px] lg:block">
@@ -163,7 +167,7 @@ export default async function Home() {
         {/* The words, which sit above all of it. */}
         <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
           <Sparks className="left-[8%] top-[-8px] h-8 w-11 sm:left-[14%]" />
-          <Star className="right-[4%] top-6 hidden h-9 w-9 sm:block" />
+          <Star className="-right-2 top-1 hidden h-9 w-9 lg:block" />
 
           {/* Short lines on purpose. The reference's drama comes from setting
               eleven characters at 7rem; a longer line has to shrink to clear the
@@ -182,19 +186,19 @@ export default async function Home() {
           </h1>
 
           <p
-            className="mt-4 max-w-md text-pretty text-lg leading-relaxed sm:mt-6"
+            className="mt-3 max-w-md text-pretty text-base leading-relaxed sm:mt-5 sm:text-lg"
             style={{ color: BODY }}
           >
             Write down how you eat, sleep and feel. A nutritionist reads every day
             and tells you what to change.
           </p>
 
-          <div className="relative mt-9 sm:mt-11">
+          <div className="relative mt-6 sm:mt-8">
             <Cheer className="-left-10 top-2 h-11 w-8" />
             <Cheer className="-right-10 top-2 h-11 w-8" flip />
             <Link
               href="/signup"
-              className="relative inline-flex items-center justify-center px-14 py-5 text-lg font-semibold text-white transition hover:brightness-110"
+              className="relative inline-flex items-center justify-center px-12 py-4 text-lg font-semibold text-white transition hover:brightness-110"
             >
               {/* The button is a torn strip of green paper, not a rounded rect. */}
               <TornStrip fill={GREEN} className="inset-0 size-full" />
@@ -202,7 +206,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <p className="mt-5 text-sm" style={{ color: BODY }}>
+          <p className="mt-4 text-sm" style={{ color: BODY }}>
             Free while it is just you and your nutritionist.
           </p>
         </div>
@@ -211,9 +215,9 @@ export default async function Home() {
       </section>
 
       {/* ----------------------------- promises ----------------------------- */}
-      <section id="how" className="relative mx-auto w-full max-w-6xl px-5 py-14 sm:py-20">
+      <section id="how" className="relative mx-auto w-full max-w-6xl shrink-0 px-5 py-10 sm:py-8">
         <h2 className="sr-only">How it works</h2>
-        <ul className="grid gap-12 sm:grid-cols-3 sm:gap-0">
+        <ul className="grid gap-10 sm:grid-cols-3 sm:gap-0">
           {PROMISES.map((promise, index) => (
             <li
               key={promise.title}
@@ -223,7 +227,7 @@ export default async function Home() {
               style={index > 0 ? { borderColor: '#DDD6C4' } : undefined}
             >
               <h3
-                className={`${display.className} text-4xl font-black tracking-tight sm:text-[2.6rem]`}
+                className={`${display.className} text-4xl font-black tracking-tight sm:text-[2.1rem]`}
                 style={{ color: GREEN }}
               >
                 {promise.title}
@@ -231,8 +235,8 @@ export default async function Home() {
 
               {/* Torn paper behind, the cut-out resting on it and overhanging
                   the bottom, which is what stops the pair reading as a card. */}
-              <div className="relative mt-6 h-40 w-full max-w-[260px]">
-                <Scrap size="small" fill={promise.fill} className="inset-x-5 bottom-4 h-[64%]" />
+              <div className="relative mt-4 h-28 w-full max-w-[210px] sm:h-24">
+                <Scrap size="small" fill={promise.fill} className="inset-x-4 bottom-3 h-[64%]" />
                 <Cutout
                   src={promise.art.src}
                   width={promise.art.width}
@@ -246,31 +250,12 @@ export default async function Home() {
                 {index === 2 ? <Star className="-right-3 -top-3 h-8 w-8" /> : null}
               </div>
 
-              <p className="mt-7 max-w-xs text-pretty text-[15px] leading-relaxed" style={{ color: BODY }}>
+              <p className="mt-4 max-w-[26ch] text-pretty text-sm leading-relaxed" style={{ color: BODY }}>
                 {promise.detail}
               </p>
             </li>
           ))}
         </ul>
-      </section>
-
-      {/* ------------------------------ closing ----------------------------- */}
-      <section className="relative mt-auto px-5 pb-14 pt-4 text-center">
-        <p className={`${hand.className} text-3xl`} style={{ color: GREEN }}>
-          One honest day at a time.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-semibold">
-          <Link
-            href="/signup"
-            className="rounded-md px-5 py-2.5 text-white transition hover:brightness-110"
-            style={{ background: GREEN }}
-          >
-            Start your diary
-          </Link>
-          <Link href="/login" className="hover:underline" style={{ color: BODY }}>
-            I already have an account
-          </Link>
-        </div>
       </section>
     </div>
   )
