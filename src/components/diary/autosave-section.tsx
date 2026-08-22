@@ -11,6 +11,7 @@ import {
 } from 'react'
 import type { ReactNode, Ref } from 'react'
 
+import { useDiarySections } from '@/components/diary/diary-sections'
 import { idleSaveState, type SaveState } from '@/lib/diary/save-state'
 
 /** Lets a section ask for a save when nothing in the form itself changed. */
@@ -69,6 +70,13 @@ export function AutosaveSection({
     pendingRef.current = pending
   }, [pending])
 
+  // Read from the flush callback, which closes over whatever was current when it
+  // was registered rather than the latest render.
+  const dirtyRef = useRef(dirty)
+  useEffect(() => {
+    dirtyRef.current = dirty
+  }, [dirty])
+
   const clearTimer = useCallback(() => {
     if (timer.current) {
       clearTimeout(timer.current)
@@ -112,6 +120,20 @@ export function AutosaveSection({
   // Zero rather than immediate: the caller has usually just changed state, and
   // the form has to re-render before there is anything new to read off it.
   useImperativeHandle(ref, () => ({ save: () => schedule(0) }), [schedule])
+
+  // Post commits the whole day, so every section has to be reachable from it —
+  // and has to be able to say when it has finished, or Post would read the
+  // database a beat too early.
+  const sections = useDiarySections()
+  useEffect(() => {
+    if (!sections) return
+    return sections.register({
+      flush: () => {
+        if (dirtyRef.current) schedule(0)
+      },
+      busy: () => dirtyRef.current || pendingRef.current,
+    })
+  }, [sections, schedule])
 
   // A pending timer would otherwise fire after navigation, against a form that
   // is no longer mounted.

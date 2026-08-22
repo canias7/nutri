@@ -167,6 +167,7 @@ export type Database = {
           log_date: string
           morning_activity: string
           outdoor_minutes: number | null
+          posted_at: string | null
           stress_level: number | null
           stress_relief: string
           updated_at: string
@@ -194,6 +195,7 @@ export type Database = {
           log_date: string
           morning_activity?: string
           outdoor_minutes?: number | null
+          posted_at?: string | null
           stress_level?: number | null
           stress_relief?: string
           updated_at?: string
@@ -221,6 +223,7 @@ export type Database = {
           log_date?: string
           morning_activity?: string
           outdoor_minutes?: number | null
+          posted_at?: string | null
           stress_level?: number | null
           stress_relief?: string
           updated_at?: string

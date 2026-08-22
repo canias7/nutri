@@ -119,12 +119,15 @@ something else on purpose, so the difference does not keep getting read as a gap
   either side. There is no "log for another date" jump and no step counter — a
   diary that scores you out of six invites filling boxes rather than answering
   them.
-- **Required answers are marked, never enforced.** Wake-up time, morning weight,
-  energy level, a drink, what you ate and when, and asleep-at carry a red
-  asterisk. Nothing is blocked: a half-filled day still saves, which is the whole
-  point of autosaving. Everything unmarked is optional, and says so by saying
-  nothing — no per-section badges, and no "Saved" pill landing after every
-  keystroke.
+- **Autosave, plus one Post at the end.** Every section saves itself as it is
+  typed, so a half-filled day is never lost. What that never gave anyone was a
+  moment of having finished, so the diary ends with a Post that hands the day
+  over — and that is the one place the required answers are enforced. Wake-up
+  time, morning weight, energy level, a drink, what you ate and when, and
+  asleep-at carry a red asterisk; pressing Post on a day with gaps names them
+  rather than refusing silently. Typing is never blocked. Everything unmarked is
+  optional and says so by saying nothing — no per-section badges, no "Saved"
+  pill after every keystroke. Posting again after an edit updates the day.
 - **Every drink counts toward the water target.** The reference counts clean
   water only, and asks per drink. A total that disagrees with the list above it
   is worth less than the distinction it was drawing.

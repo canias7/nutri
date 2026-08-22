@@ -30,8 +30,7 @@ export default async function DashboardPage() {
   const logsByDate = new Map(recent.map((log) => [log.log_date, log]))
   const waterWeek = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(today, index - 6)
-    const log = logsByDate.get(date)
-    return { date, ml: log?.water_total_ml ?? 0, logged: Boolean(log) }
+    return { date, ml: logsByDate.get(date)?.water_total_ml ?? 0 }
   })
 
   // Oldest first so the chart reads left to right.

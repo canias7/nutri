@@ -105,8 +105,10 @@ export function DayDiscussion({
           onChange={(event) => setDraft(event.target.value)}
         />
 
-        <SubmitButton pendingLabel="Posting…" disabled={!draft.trim()}>
-          Post
+        {/* "Send", not "Post": Post hands over the whole day, and two buttons
+            saying the same word a screen apart is how the confusion started. */}
+        <SubmitButton pendingLabel="Sending…" disabled={!draft.trim()}>
+          Send
         </SubmitButton>
       </form>
     </section>

@@ -6,7 +6,7 @@ import { useMidnightRefresh } from '@/components/use-midnight-refresh'
 import { WEEKDAY_INITIALS } from '@/lib/diary/date'
 import { formatNumber } from '@/lib/format'
 
-export type WaterDay = { date: string; ml: number; logged: boolean }
+export type WaterDay = { date: string; ml: number }
 
 // Same validated accent as the other charts: inside the lightness band and above
 // 3:1 contrast on both surfaces.
@@ -48,10 +48,13 @@ export function WaterWeek({
   useMidnightRefresh(today)
 
   const met = days.filter((day) => day.ml >= targetMl).length
-  const loggedDays = days.filter((day) => day.logged)
+  // Averaged over the days with water in them. A day whose diary was opened for
+  // something else is not a day of nothing to drink — it drags the mean down
+  // for no reason.
+  const drank = days.filter((day) => day.ml > 0)
   const average =
-    loggedDays.length > 0
-      ? Math.round(loggedDays.reduce((sum, day) => sum + day.ml, 0) / loggedDays.length)
+    drank.length > 0
+      ? Math.round(drank.reduce((sum, day) => sum + day.ml, 0) / drank.length)
       : 0
 
   // Headroom above whichever is taller, so a day that overshoots still fits.
@@ -70,16 +73,16 @@ export function WaterWeek({
   return (
     <figure className="m-0 flex flex-col gap-3">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        {/* The average stays put while a column is hovered — that day's own
+            figure appears over its bar instead, where it is being pointed at. */}
         <span className="text-2xl font-semibold tabular-nums">
-          {formatNumber(shown ? shown.ml : average)}
+          {formatNumber(average)}
           <span className="ml-1 text-sm font-medium text-slate-500 dark:text-slate-400">
             ml
           </span>
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {shown
-            ? label(shown.date, today)
-            : `Daily average · target met on ${met} of ${days.length} days`}
+          {shown ? label(shown.date, today) : 'Daily average'}
         </span>
       </figcaption>
 
@@ -124,6 +127,17 @@ export function WaterWeek({
                 />
               ) : null}
 
+              {active === index ? (
+                <text
+                  x={x + barW / 2}
+                  y={Math.min(top, targetTop) - 7}
+                  textAnchor="middle"
+                  className="fill-slate-900 text-[11px] font-semibold tabular-nums dark:fill-slate-100"
+                >
+                  {formatNumber(day.ml)}
+                </text>
+              ) : null}
+
               <rect
                 x={PAD_X + index * band}
                 y={PAD_TOP}
@@ -146,13 +160,27 @@ export function WaterWeek({
           className="text-black/10 dark:text-white/15"
         />
 
-        <text
-          x={VIEW_W - PAD_X - GUTTER + 10}
-          y={targetTop + 4}
-          className="fill-slate-400 text-[10px] font-medium tabular-nums dark:fill-slate-500"
-        >
-          {formatNumber(targetMl)}
-        </text>
+        {/* Sat loose in the gutter before, reading as a stray number. On its
+            own chip it is plainly the label for the line the slots end on. */}
+        <g>
+          <rect
+            x={VIEW_W - PAD_X - GUTTER + 6}
+            y={targetTop - 9}
+            width={GUTTER - 10}
+            height={18}
+            rx="9"
+            fill="currentColor"
+            className="text-slate-100 dark:text-white/10"
+          />
+          <text
+            x={VIEW_W - PAD_X - GUTTER + 6 + (GUTTER - 10) / 2}
+            y={targetTop + 4}
+            textAnchor="middle"
+            className="fill-slate-600 text-[10px] font-semibold tabular-nums dark:fill-slate-300"
+          >
+            {formatNumber(targetMl)}
+          </text>
+        </g>
       </svg>
 
       <ol className="flex gap-0.5 pr-[8.7%]">
@@ -196,11 +224,14 @@ export function WaterWeek({
               {days.map((day) => (
                 <tr key={day.date} className="border-t border-black/5 dark:border-white/10">
                   <td className="py-1.5 pr-4">{label(day.date, today)}</td>
+                  {/* No water is no water, whether or not the rest of that day
+                      was filled in. "0 ml, 300 short" for a day nobody drank on
+                      reads as a failure rather than a blank. */}
                   <td className="py-1.5 pr-4 tabular-nums">
-                    {day.logged ? `${formatNumber(day.ml)} ml` : '—'}
+                    {day.ml > 0 ? `${formatNumber(day.ml)} ml` : '—'}
                   </td>
                   <td className="py-1.5 tabular-nums">
-                    {!day.logged
+                    {day.ml === 0
                       ? 'Nothing logged'
                       : day.ml >= targetMl
                         ? 'Met'

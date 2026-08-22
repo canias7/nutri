@@ -309,3 +309,80 @@ export async function removeDrink(id: string, date: string): Promise<SaveState> 
   refresh(date)
   return saved
 }
+
+/**
+ * Hands the day over: checks the answers the diary asks for and stamps it.
+ *
+ * Read back off the database rather than trusted from the form, because the
+ * sections each save themselves and the button only asks them to hurry up — by
+ * the time this runs, what is stored is the truth about the day.
+ *
+ * Missing answers are reported rather than written around. Nothing is lost
+ * either way; the day just is not finished.
+ */
+export async function postDay(
+  _previous: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const date = field(formData, 'date')
+
+  const log = await ensureLog(date)
+  if (!log) return failed
+
+  const supabase = await createClient()
+
+  const [{ data: day }, { data: meals }, { data: drinks }, { data: supplements }, { data: taken }] =
+    await Promise.all([
+      supabase.from('daily_logs').select('*').eq('id', log.id).single(),
+      supabase.from('log_meals').select('eaten, eaten_at').eq('daily_log_id', log.id),
+      supabase.from('log_drinks').select('id').eq('daily_log_id', log.id).limit(1),
+      supabase
+        .from('supplements')
+        .select('id')
+        .eq('client_id', log.clientId)
+        .eq('is_active', true),
+      supabase
+        .from('log_supplement_intakes')
+        .select('supplement_id')
+        .eq('daily_log_id', log.id)
+        .limit(1),
+    ])
+
+  if (!day) return failed
+
+  const missing: string[] = []
+  if (!day.wake_time) missing.push('wake-up time')
+  if (day.weight_kg === null) missing.push('morning weight')
+  if (day.energy_level === null) missing.push('energy level')
+  if ((drinks ?? []).length === 0) missing.push('something to drink')
+  if ((meals ?? []).length === 0) missing.push('what you ate')
+  else if ((meals ?? []).some((meal) => !meal.eaten.trim() || !meal.eaten_at)) {
+    missing.push('what you ate and when, on every entry')
+  }
+  if ((supplements ?? []).length > 0 && (taken ?? []).length === 0) {
+    missing.push('which supplements you took')
+  }
+  if (!day.bed_time) missing.push('what time you fell asleep')
+
+  if (missing.length > 0) {
+    return {
+      status: 'error',
+      message: `Still to fill in: ${asList(missing)}.`,
+    }
+  }
+
+  const { error } = await supabase
+    .from('daily_logs')
+    .update({ posted_at: new Date().toISOString() })
+    .eq('id', log.id)
+
+  if (error) return failed
+  refresh(date)
+  return saved
+}
+
+/** "a, b and c" — the way it would be read aloud. */
+function asList(items: string[]): string {
+  if (items.length === 1) return items[0]
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
+}
