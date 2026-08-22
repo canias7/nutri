@@ -75,11 +75,19 @@ export function WaterWeek({
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         {/* The average stays put while a column is hovered — that day's own
             figure appears over its bar instead, where it is being pointed at. */}
-        <span className="text-2xl font-semibold tabular-nums">
-          {formatNumber(average)}
-          <span className="ml-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            ml
-          </span>
+        {/* A week with nothing in it has no average — "0 ml" would read as a
+            week of drinking nothing rather than a week nobody logged. */}
+        <span
+          className={`text-2xl font-semibold tabular-nums ${
+            drank.length === 0 ? 'text-slate-400 dark:text-slate-500' : ''
+          }`}
+        >
+          {drank.length === 0 ? '—' : formatNumber(average)}
+          {drank.length > 0 ? (
+            <span className="ml-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+              ml
+            </span>
+          ) : null}
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {shown ? label(shown.date, today) : 'Daily average'}

@@ -33,11 +33,15 @@ export default async function DashboardPage() {
     return { date, ml: logsByDate.get(date)?.water_total_ml ?? 0 }
   })
 
-  // Oldest first so the chart reads left to right.
-  const weights = recent
-    .filter((log) => log.weight_kg !== null)
-    .map((log) => ({ date: log.log_date, kg: Number(log.weight_kg) }))
-    .reverse()
+  // A fixed fortnight counted back from today, the way the water week is. The
+  // chart is drawn whether or not anyone has stepped on a scale yet — an empty
+  // frame says "this is where your weight will go" and a paragraph does not.
+  const weights = Array.from({ length: 14 }, (_, index) => {
+    const date = addDays(today, index - 13)
+    const kg = logsByDate.get(date)?.weight_kg
+    return { date, kg: kg === null || kg === undefined ? null : Number(kg) }
+  })
+  const weighed = weights.filter((day) => day.kg !== null)
 
   // Days where both were recorded; one without the other says nothing.
   const stressEnergy = recent
@@ -53,7 +57,7 @@ export default async function DashboardPage() {
   // stands in for it — a chart of movement is still worth drawing, and saying
   // which baseline it used is better than showing nothing.
   const profileStart = client.start_weight_kg ? Number(client.start_weight_kg) : null
-  const baseline = profileStart ?? weights[0]?.kg ?? null
+  const baseline = profileStart ?? weighed[0]?.kg ?? null
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,28 +112,17 @@ export default async function DashboardPage() {
         <WaterWeek days={waterWeek} targetMl={client.water_target_ml} today={today} />
       </section>
 
-      {baseline !== null && weights.length >= 2 ? (
-        <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Weight against your start
-          </h2>
-          <WeightSinceStart
-            points={weights}
-            startKg={baseline}
-            baselineIsFirstLog={profileStart === null}
-          />
-        </section>
-      ) : (
-        <section className="rounded-2xl border border-dashed border-black/15 p-5 dark:border-white/15">
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Weight against your start
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Not enough data to plot yet. Weigh yourself in the mornings and log it
-            in the diary — two days is enough to start.
-          </p>
-        </section>
-      )}
+      <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Weight against your start
+        </h2>
+        <WeightSinceStart
+          points={weights}
+          startKg={baseline}
+          baselineIsFirstLog={profileStart === null}
+          today={today}
+        />
+      </section>
 
       {stressEnergy.length >= 3 ? (
         <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
