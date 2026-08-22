@@ -67,7 +67,10 @@ export function AppShell({
           <NavTabLinks items={nav} />
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-6 pb-24 md:py-8">
+        {/* Wider once the viewport has room for it. 48rem beside a 15rem sidebar
+            leaves a third of a large screen empty, which is a lot of nothing to
+            put two charts of the same week in. */}
+        <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-6 pb-24 md:py-8 xl:max-w-5xl">
           <InstallPrompt />
           {children}
         </main>

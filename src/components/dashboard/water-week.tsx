@@ -101,7 +101,7 @@ export function WaterWeek({
 
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="h-48 w-full touch-none"
+        className="aspect-[8/5] w-full touch-none"
         preserveAspectRatio="none"
         role="img"
         aria-label={`Water over the last ${days.length} days against a ${formatNumber(targetMl)} ml target; reached on ${met} of them.`}
