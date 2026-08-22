@@ -8,8 +8,6 @@ import { idleSaveState } from '@/lib/diary/save-state'
 import { formatNumber } from '@/lib/format'
 import type { LogDrink } from '@/lib/diary/queries'
 
-const QUICK_VOLUMES = [200, 250, 330, 500]
-
 export function WaterSection({
   date,
   drinks,
@@ -24,16 +22,9 @@ export function WaterSection({
   const [state, formAction, pending] = useActionState(addDrink, idleSaveState)
   const [removing, startRemoving] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
-  const volumeRef = useRef<HTMLInputElement>(null)
 
   const pct = Math.min(100, Math.round((totalMl / targetMl) * 100))
   const metGoal = totalMl >= targetMl
-
-  function quickAdd(volume: number) {
-    if (!volumeRef.current) return
-    volumeRef.current.value = String(volume)
-    formRef.current?.requestSubmit()
-  }
 
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
@@ -78,20 +69,6 @@ export function WaterSection({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {QUICK_VOLUMES.map((volume) => (
-          <button
-            key={volume}
-            type="button"
-            onClick={() => quickAdd(volume)}
-            disabled={pending}
-            className="rounded-full border border-black/10 px-3 py-1.5 text-sm font-medium transition hover:bg-slate-50 disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/5"
-          >
-            +{volume} ml
-          </button>
-        ))}
-      </div>
-
       {drinks.length > 0 ? (
         <ul className="mb-4 flex flex-col gap-1.5">
           {drinks.map((drink) => (
@@ -134,7 +111,6 @@ export function WaterSection({
 
           <Field label="Volume (ml)" htmlFor="volumeMl">
             <Input
-              ref={volumeRef}
               id="volumeMl"
               name="volumeMl"
               type="number"

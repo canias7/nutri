@@ -25,12 +25,6 @@ const ICONS: Record<string, ReactNode> = {
       <path d="M9 9h6M9 13h4" strokeLinecap="round" />
     </>
   ),
-  '/history': (
-    <>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 7.5V12l3 1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </>
-  ),
   '/measurements': (
     <>
       <rect x="2.5" y="8" width="19" height="8" rx="2" />

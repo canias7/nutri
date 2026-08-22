@@ -47,7 +47,8 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
 
   return (
     <div className="flex flex-col gap-5">
-      {/* The strip reaches a week back; History is the way to anything older. */}
+      {/* The strip reaches a week back; the dashboard's All history link
+          is the way to anything older. */}
       <WeekStrip date={date} today={today} />
 
       <MorningSection date={date} log={day.log} />

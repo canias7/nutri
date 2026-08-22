@@ -13,8 +13,7 @@ export default async function ClientLayout({ children }: LayoutProps<'/'>) {
 
   const nav = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/diary', label: "Today's diary" },
-    { href: '/history', label: 'History' },
+    { href: '/diary', label: 'Diary' },
     { href: '/measurements', label: 'Measurements' },
     { href: '/supplements', label: 'Supplements' },
     { href: '/messages', label: 'Messages', badge: unreadMessages },

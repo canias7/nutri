@@ -3,10 +3,11 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { StressEnergy } from '@/components/dashboard/stress-energy'
+import { WaterWeek } from '@/components/dashboard/water-week'
 import { WeightTrend } from '@/components/dashboard/weight-trend'
 import { UNIT_SUFFIX, WeightChangeText, WeightText } from '@/components/units/readouts'
 import { requireClient } from '@/lib/auth/session'
-import { formatShortDate, streakFrom } from '@/lib/diary/date'
+import { addDays, formatShortDate, streakFrom } from '@/lib/diary/date'
 import { formatNumber } from '@/lib/format'
 import { resolveToday } from '@/lib/diary/today'
 import {
@@ -29,6 +30,16 @@ export default async function DashboardPage() {
 
   const firstName = viewer.profile.full_name.split(' ')[0] || 'there'
   const streak = streakFrom(new Set(recent.map((log) => log.log_date)), today)
+
+  // Walked back from today rather than listing what exists, so a day with
+  // nothing logged is a gap in the week instead of quietly not being there —
+  // and so the window moves on by itself as the days pass.
+  const logsByDate = new Map(recent.map((log) => [log.log_date, log]))
+  const waterWeek = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(today, index - 6)
+    const log = logsByDate.get(date)
+    return { date, ml: log?.water_total_ml ?? 0, logged: Boolean(log) }
+  })
   const waterToday = day.log?.water_total_ml ?? 0
   const waterPct = Math.min(100, Math.round((waterToday / client.water_target_ml) * 100))
 
@@ -47,15 +58,6 @@ export default async function DashboardPage() {
       energy: Number(log.energy_level),
     }))
     .reverse()
-
-  const wateredDays = recent.filter((log) => log.water_total_ml > 0)
-  const weeklyWaterAverage =
-    wateredDays.length > 0
-      ? Math.round(
-          wateredDays.reduce((sum, log) => sum + log.water_total_ml, 0) /
-            wateredDays.length,
-        )
-      : null
 
   const latestWeight = weights.at(-1)
   const startWeight = client.start_weight_kg ? Number(client.start_weight_kg) : null
@@ -132,16 +134,12 @@ export default async function DashboardPage() {
         />
       </section>
 
-      {weeklyWaterAverage !== null ? (
-        <p className="-mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Averaging{' '}
-          <span className="font-semibold text-slate-700 tabular-nums dark:text-slate-200">
-            {formatNumber(weeklyWaterAverage)} ml
-          </span>{' '}
-          of water across the {wateredDays.length} day
-          {wateredDays.length === 1 ? '' : 's'} you have logged.
-        </p>
-      ) : null}
+      <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Water, last 7 days
+        </h2>
+        <WaterWeek days={waterWeek} targetMl={client.water_target_ml} today={today} />
+      </section>
 
       {weights.length >= 2 ? (
         <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
