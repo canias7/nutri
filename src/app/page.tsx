@@ -61,10 +61,10 @@ export default async function Home() {
               Start your diary
             </Link>
             <Link
-              href="/signup"
+              href="/login"
               className="inline-flex items-center justify-center rounded-xl border border-black/10 px-5 py-3 text-[15px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"
             >
-              I&apos;m a nutritionist
+              I already have an account
             </Link>
           </div>
         </section>

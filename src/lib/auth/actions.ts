@@ -16,7 +16,6 @@ export async function signUp(
   const values = {
     fullName: field(formData, 'fullName'),
     email: field(formData, 'email'),
-    role: field(formData, 'role') || 'client',
   }
 
   const parsed = signUpSchema.safeParse({
@@ -32,10 +31,13 @@ export async function signUp(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      // Read by the signup trigger to build the profile and its role row.
+      // Read by the signup trigger to build the profile and its role row. The
+      // role is fixed here rather than taken from the form: a Server Action is
+      // reachable by direct POST, so anything the form sends is only a
+      // suggestion.
       data: {
         full_name: parsed.data.fullName,
-        role: parsed.data.role,
+        role: 'client',
         language: 'en',
       },
       emailRedirectTo: `${siteUrl}/auth/confirm`,
@@ -48,7 +50,7 @@ export async function signUp(
 
   // With email confirmation switched off, Supabase signs the user straight in.
   if (data.session) {
-    redirect(homePathFor(parsed.data.role))
+    redirect(homePathFor('client'))
   }
 
   redirect(`/check-email?email=${encodeURIComponent(parsed.data.email)}`)
