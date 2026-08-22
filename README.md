@@ -58,9 +58,28 @@ npm run cf:deploy
 the Workers runtime is not Node, and things that pass `next build` can still fail
 there.
 
-Both Supabase values are publishable, so they live in `wrangler.jsonc` and the
-deploy needs no secrets. Note that Next.js inlines `NEXT_PUBLIC_*` at build time,
-so they must also be in the environment that runs the build.
+Both Supabase values are publishable, so the deploy needs no secrets. They are
+committed twice on purpose, because the two are read at different moments:
+`wrangler.jsonc` covers the Worker at runtime, and `.env.production` covers the
+build, since Next.js inlines `NEXT_PUBLIC_*` while building rather than reading
+it later.
+
+### Cloudflare Workers Builds
+
+Connecting the repository in the Cloudflare dashboard needs these settings:
+
+| Field | Value |
+| ----- | ----- |
+| Branch | `main` |
+| Build command | `npm ci && npm run cf:build` |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+| Build variables | none |
+
+The build command is the one that catches people out. `wrangler deploy` only
+uploads `.open-next/worker.js`, and nothing creates that file until the OpenNext
+build runs — so with no build command the deploy fails having found nothing to
+upload.
 
 Once you have the deployed address, two settings matter or confirmation emails
 lead nowhere:
