@@ -33,9 +33,40 @@ cp .env.example .env.local   # then fill in your Supabase project values
 npm run dev
 ```
 
-The app runs at http://localhost:3000. The landing page reports whether the
-Supabase connection is live, so a red dot there means the environment variables
-are wrong before you go hunting anywhere else.
+The app runs at http://localhost:3000.
+
+To sign in, seed two working accounts with `supabase/seed.sql`:
+
+| Account      | Email                | Password      |
+| ------------ | -------------------- | ------------- |
+| Client       | `alex@nutritest.app` | `Passw0rd123` |
+| Nutritionist | `dana@nutritest.app` | `Passw0rd123` |
+
+The nutritionist's invite code is `dana_coach`.
+
+## Deploying
+
+Import the repository at [vercel.com/new](https://vercel.com/new). Next.js needs
+no build configuration; set two environment variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://gezrztmxyxbtbbasvbix.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6
+```
+
+Every branch gets its own preview URL, so work in progress is deployable without
+touching the production branch.
+
+Once you have the deployed address, two more settings matter or email links break:
+
+1. Set `NEXT_PUBLIC_SITE_URL` to that address. Confirmation links are built from
+   it, and behind a proxy the request headers describe the hop rather than the
+   address the user typed.
+2. Add it to **Authentication → URL Configuration → Redirect URLs** in the
+   Supabase dashboard. Supabase refuses to redirect anywhere not on that list.
+
+Supabase's built-in mailer sends only a couple of messages an hour and rejects
+domains without MX records, so configure your own SMTP before real signups.
 
 ## Supabase
 
