@@ -14,6 +14,7 @@ export type SectionKey =
   | 'morning'
   | 'water'
   | 'food'
+  | 'restroom'
   | 'daytime'
   | 'supplements'
   | 'extras'
@@ -76,6 +77,8 @@ export function describeDay(day: DayFacts): Record<SectionKey, SectionNeed> {
     morning: { missing: morning, optional: false },
     water: { missing: water, optional: false },
     food: { missing: food, optional: false },
+    // A day with no visit is a real answer, so this asks and never insists.
+    restroom: { missing: [], optional: true },
     daytime: { missing: [], optional: true },
     // Only required once there is something to tick.
     supplements: { missing: supplements, optional: day.activeSupplements === 0 },

@@ -12,6 +12,7 @@ import {
 import { DayDiscussion } from "@/components/diary/day-discussion";
 import { DiarySectionsProvider } from "@/components/diary/diary-sections";
 import { PostDay } from "@/components/diary/post-day";
+import { RestroomSection } from "@/components/diary/restroom-section";
 import { FoodSection } from "@/components/diary/food-section";
 import { SupplementsChecklist } from "@/components/diary/supplements-checklist";
 import { WaterSection } from "@/components/diary/water-section";
@@ -100,6 +101,13 @@ export default async function DiaryPage({
           meals={day.meals}
           clientId={viewer.id}
           photoUrls={photoUrls}
+        />
+
+        <RestroomSection
+          need={need.restroom}
+          summary={summary.restroom}
+          date={date}
+          visits={day.stools}
         />
 
         <DaytimeSection date={date} log={day.log}
@@ -212,6 +220,11 @@ function daySummaries(
   return {
     morning: join([
       time(log?.wake_time),
+      // Numeric comes back off the wire as a string often enough to be worth
+      // coercing, the same way the weight beside it is.
+      log?.sleep_hours === null || log?.sleep_hours === undefined
+        ? null
+        : `slept ${formatNumber(Number(log.sleep_hours))} h`,
       log?.weight_kg === null || log?.weight_kg === undefined ? null : (
         <WeightText kg={Number(log.weight_kg)} />
       ),
@@ -227,6 +240,10 @@ function daySummaries(
     // The food itself, not a count — "2 entries" tells you nothing you wanted.
     food: eaten.length ? eaten.join(", ") : undefined,
 
+    restroom: day.stools.length
+      ? `${day.stools.length} ${day.stools.length === 1 ? 'time' : 'times'}`
+      : undefined,
+
     daytime: join([log?.activity_type || null, log?.stress_level ? `stress ${log.stress_level}` : null]),
 
     supplements: day.supplements.length
@@ -241,6 +258,9 @@ function daySummaries(
     ]),
 
     complaints: join([
+      // Only when it is a yes. "Not on period" on three hundred rows is noise,
+      // and the row is about what happened.
+      log?.on_period ? 'on period' : null,
       log?.complaint_emotional || null,
       log?.complaint_digestion || null,
       log?.complaint_skin || null,

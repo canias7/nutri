@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import { Field, Input, Textarea } from '@/components/form-fields'
+import { Field, Input, Textarea, YesNoField } from '@/components/form-fields'
 import { WeightInput } from '@/components/units/weight-input'
 import { AutosaveSection } from '@/components/diary/autosave-section'
 import {
@@ -44,21 +44,33 @@ export function MorningSection({ date, log, need, summary }: SectionProps) {
           <Input id="wakeTime" name="wakeTime" type="time" defaultValue={toTimeInput(log?.wake_time)} />
         </Field>
 
+        {/* Asked here rather than in the evening, because this is the point at
+            which the client knows the answer: the night is over. The bedtime on
+            this day's row belongs to the night that follows it. */}
+        <Field
+          label="Hours of sleep"
+          htmlFor="sleepHours"
+          hint="Last night, roughly. Halves are fine."
+        >
+          <Input
+            id="sleepHours"
+            name="sleepHours"
+            type="number"
+            inputMode="decimal"
+            step={0.5}
+            min={0}
+            max={24}
+            placeholder="7.5"
+            defaultValue={log?.sleep_hours ?? ''}
+          />
+        </Field>
+
         <Field label="Morning weight" htmlFor="weightKg" required>
           <WeightInput
             id="weightKg"
             name="weightKg"
             storedValue={log?.weight_kg ?? null}
             placeholder="70.5"
-          />
-        </Field>
-
-        <Field label="How you woke up" htmlFor="wakingMood">
-          <Input
-            id="wakingMood"
-            name="wakingMood"
-            placeholder="Rested, groggy, anxious…"
-            defaultValue={log?.waking_mood ?? ''}
           />
         </Field>
 
@@ -75,6 +87,15 @@ export function MorningSection({ date, log, need, summary }: SectionProps) {
           />
         </Field>
       </div>
+
+      <Field label="How you woke up" htmlFor="wakingMood">
+        <Input
+          id="wakingMood"
+          name="wakingMood"
+          placeholder="Rested, groggy, anxious…"
+          defaultValue={log?.waking_mood ?? ''}
+        />
+      </Field>
 
       <Field label="Morning activity" htmlFor="morningActivity">
         <Input
@@ -245,6 +266,13 @@ export function ComplaintsSection({ date, log, need, summary }: SectionProps) {
       date={date}
       action={saveComplaints}
     >
+      <YesNoField
+        legend="On your period"
+        name="onPeriod"
+        value={log?.on_period ?? null}
+        hint="Leave both blank if it does not apply to you."
+      />
+
       <Field label="Digestion & gut" htmlFor="complaintDigestion">
         <Textarea
           id="complaintDigestion"

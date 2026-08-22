@@ -166,8 +166,10 @@ export type Database = {
           id: string
           log_date: string
           morning_activity: string
+          on_period: boolean | null
           outdoor_minutes: number | null
           posted_at: string | null
+          sleep_hours: number | null
           stress_level: number | null
           stress_relief: string
           updated_at: string
@@ -194,8 +196,10 @@ export type Database = {
           id?: string
           log_date: string
           morning_activity?: string
+          on_period?: boolean | null
           outdoor_minutes?: number | null
           posted_at?: string | null
+          sleep_hours?: number | null
           stress_level?: number | null
           stress_relief?: string
           updated_at?: string
@@ -222,8 +226,10 @@ export type Database = {
           id?: string
           log_date?: string
           morning_activity?: string
+          on_period?: boolean | null
           outdoor_minutes?: number | null
           posted_at?: string | null
+          sleep_hours?: number | null
           stress_level?: number | null
           stress_relief?: string
           updated_at?: string

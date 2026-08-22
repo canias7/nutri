@@ -6,12 +6,16 @@ import type { Tables } from '@/lib/supabase/database.types'
 export type DailyLog = Tables<'daily_logs'>
 export type LogMeal = Tables<'log_meals'>
 export type LogDrink = Tables<'log_drinks'>
+/** One restroom visit. The table has carried its original name since the
+    first migration; the section on top of it is called Restroom. */
+export type LogStool = Tables<'log_stools'>
 export type Supplement = Tables<'supplements'>
 
 export type DiaryDay = {
   log: DailyLog | null
   meals: LogMeal[]
   drinks: LogDrink[]
+  stools: LogStool[]
   supplements: Supplement[]
   takenSupplementIds: string[]
 }
@@ -49,32 +53,43 @@ export async function getDiaryDay(
       log: null,
       meals: [],
       drinks: [],
+      stools: [],
       supplements: supplements ?? [],
       takenSupplementIds: [],
     }
   }
 
-  const [{ data: meals }, { data: drinks }, { data: taken }] = await Promise.all([
-    supabase
-      .from('log_meals')
-      .select('*')
-      .eq('daily_log_id', log.id)
-      .order('sort_order'),
-    supabase
-      .from('log_drinks')
-      .select('*')
-      .eq('daily_log_id', log.id)
-      .order('created_at'),
-    supabase
-      .from('log_supplement_intakes')
-      .select('supplement_id')
-      .eq('daily_log_id', log.id),
-  ])
+  const [{ data: meals }, { data: drinks }, { data: stools }, { data: taken }] =
+    await Promise.all([
+      supabase
+        .from('log_meals')
+        .select('*')
+        .eq('daily_log_id', log.id)
+        .order('sort_order'),
+      supabase
+        .from('log_drinks')
+        .select('*')
+        .eq('daily_log_id', log.id)
+        .order('created_at'),
+      // Times first so the day reads in order, then insertion order for the
+      // visits nobody put a time on.
+      supabase
+        .from('log_stools')
+        .select('*')
+        .eq('daily_log_id', log.id)
+        .order('occurred_at', { nullsFirst: false })
+        .order('created_at'),
+      supabase
+        .from('log_supplement_intakes')
+        .select('supplement_id')
+        .eq('daily_log_id', log.id),
+    ])
 
   return {
     log,
     meals: meals ?? [],
     drinks: drinks ?? [],
+    stools: stools ?? [],
     supplements: supplements ?? [],
     takenSupplementIds: (taken ?? []).map((row) => row.supplement_id),
   }

@@ -33,6 +33,27 @@ function optionalTime(formData: FormData, name: string): string | null {
 }
 
 /**
+ * Hours slept, clamped to a night that could have happened.
+ *
+ * The column refuses anything outside 0–24, and a rejected write would surface
+ * as "could not save, check your connection" — which is a lie about a typo.
+ * Clamping here means the constraint is only ever a backstop.
+ */
+function optionalHours(formData: FormData, name: string): number | null {
+  const value = optionalNumber(formData, name)
+  if (value === null) return null
+  return Math.min(24, Math.max(0, Math.round(value * 10) / 10))
+}
+
+/** Yes, no, and the third answer: nobody has said. */
+function optionalBoolean(formData: FormData, name: string): boolean | null {
+  const raw = field(formData, name)
+  if (raw === 'yes') return true
+  if (raw === 'no') return false
+  return null
+}
+
+/**
  * Finds the day's row, creating it on first write.
  *
  * Days are only materialised once something is actually logged, so an untouched
@@ -100,6 +121,7 @@ export async function saveMorning(
   const date = field(formData, 'date')
   return updateLog(date, {
     wake_time: optionalTime(formData, 'wakeTime'),
+    sleep_hours: optionalHours(formData, 'sleepHours'),
     waking_mood: field(formData, 'wakingMood'),
     weight_kg: optionalNumber(formData, 'weightKg'),
     morning_activity: field(formData, 'morningActivity'),
@@ -140,6 +162,7 @@ export async function saveComplaints(
 ): Promise<SaveState> {
   const date = field(formData, 'date')
   return updateLog(date, {
+    on_period: optionalBoolean(formData, 'onPeriod'),
     complaint_emotional: field(formData, 'complaintEmotional'),
     complaint_skin: field(formData, 'complaintSkin'),
     complaint_digestion: field(formData, 'complaintDigestion'),
@@ -306,6 +329,47 @@ export async function removeDrink(id: string, date: string): Promise<SaveState> 
   await requireClient()
   const supabase = await createClient()
   const { error } = await supabase.from('log_drinks').delete().eq('id', id)
+  if (error) return failed
+  refresh(date)
+  return saved
+}
+
+/**
+ * One restroom visit. The time is optional — remembering that it happened is
+ * worth more than remembering when, and a required time is how a day ends up
+ * with nothing logged at all.
+ *
+ * Writes to `log_stools`, which is what the table has been called since the
+ * first migration.
+ */
+export async function addRestroomVisit(
+  _previous: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const date = field(formData, 'date')
+
+  const log = await ensureLog(date)
+  if (!log) return failed
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('log_stools').insert({
+    daily_log_id: log.id,
+    occurred_at: optionalTime(formData, 'occurredAt'),
+    notes: field(formData, 'notes'),
+  })
+
+  if (error) return failed
+  refresh(date)
+  return saved
+}
+
+export async function removeRestroomVisit(
+  id: string,
+  date: string,
+): Promise<SaveState> {
+  await requireClient()
+  const supabase = await createClient()
+  const { error } = await supabase.from('log_stools').delete().eq('id', id)
   if (error) return failed
   refresh(date)
   return saved

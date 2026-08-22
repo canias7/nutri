@@ -92,6 +92,83 @@ export function Textarea({
   )
 }
 
+/**
+ * A question with two answers and a third state: unanswered.
+ *
+ * Not a checkbox. A checkbox has two states, and the day a client has not got
+ * to yet would read as a confident "no" to the nutritionist — a different claim
+ * from silence. Two radios start with neither chosen, so an untouched day says
+ * nothing.
+ *
+ * Labelled through a div rather than a fieldset: `legend` inside a flex or grid
+ * fieldset is laid out by rules of its own, and browsers disagree about them.
+ */
+export function YesNoField({
+  legend,
+  name,
+  value,
+  hint,
+}: {
+  legend: string
+  name: string
+  /** Null when nobody has answered — neither button is pressed. */
+  value: boolean | null
+  hint?: ReactNode
+}) {
+  const labelId = `${name}-label`
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span
+        id={labelId}
+        className="text-sm font-medium text-slate-700 dark:text-slate-200"
+      >
+        {legend}
+      </span>
+
+      <div role="radiogroup" aria-labelledby={labelId} className="flex gap-2">
+        <YesNoChoice name={name} value="yes" label="Yes" checked={value === true} />
+        <YesNoChoice name={name} value="no" label="No" checked={value === false} />
+      </div>
+
+      {hint ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+      ) : null}
+    </div>
+  )
+}
+
+function YesNoChoice({
+  name,
+  value,
+  label,
+  checked,
+}: {
+  name: string
+  value: string
+  label: string
+  checked: boolean
+}) {
+  // The radio is the control and carries the keyboard behaviour; the label is
+  // what you see. Hiding the input visually rather than replacing it keeps arrow
+  // keys, screen readers and the form serialisation exactly as the browser
+  // intends — so the ring has to be borrowed from it too.
+  return (
+    <label
+      className="flex cursor-pointer select-none items-center justify-center rounded-xl border border-black/10 px-6 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50 has-[:checked]:text-emerald-700 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-500/30 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5 dark:has-[:checked]:border-emerald-500 dark:has-[:checked]:bg-emerald-950/40 dark:has-[:checked]:text-emerald-300"
+    >
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        defaultChecked={checked}
+        className="sr-only"
+      />
+      {label}
+    </label>
+  )
+}
+
 /** Form-level failure, as opposed to a message against one field. */
 export function FormMessage({ children }: { children: ReactNode }) {
   if (!children) return null
