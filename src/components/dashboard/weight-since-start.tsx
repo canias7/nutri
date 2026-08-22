@@ -20,12 +20,15 @@ export type WeightPoint = { date: string; kg: number | null }
 const DOWN = '#059669'
 const UP = '#b45309'
 
-const VIEW_W = 600
-const VIEW_H = 190
-const PAD_L = 40
-const PAD_R = 34
-const PAD_T = 14
-const PAD_B = 22
+// Sized to the box it actually renders into — about 310px wide in half a
+// dashboard — because preserveAspectRatio is "none" and a 600-wide viewBox in a
+// 310-wide box squashes every tick label to half its width.
+const VIEW_W = 320
+const VIEW_H = 200
+const PAD_L = 42
+const PAD_R = 28
+const PAD_T = 16
+const PAD_B = 16
 
 /**
  * Every morning's weight as a distance from where the programme started.
@@ -72,7 +75,7 @@ export function WeightSinceStart({
   const zero = y(0)
 
   const band = (VIEW_W - PAD_L - PAD_R) / Math.max(1, points.length)
-  const barW = Math.max(3, Math.min(band - 7, 26))
+  const barW = Math.max(3, Math.min(band - 5, 22))
 
   const shownDelta = active === null ? null : deltas[active]
   const shown =
@@ -109,7 +112,7 @@ export function WeightSinceStart({
 
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="h-40 w-full touch-none"
+        className="h-48 w-full touch-none"
         preserveAspectRatio="none"
         role="img"
         aria-label={

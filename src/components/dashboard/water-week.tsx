@@ -12,13 +12,17 @@ export type WaterDay = { date: string; ml: number }
 // 3:1 contrast on both surfaces.
 const ACCENT = '#059669'
 
-const VIEW_W = 600
-const VIEW_H = 150
-const PAD_X = 6
-const PAD_TOP = 14
+// The box is about 310px wide in half a dashboard, and preserveAspectRatio is
+// "none" — so the viewBox is sized to roughly that shape. A 600-wide viewBox in
+// a 310-wide box squashes every label to half its width, which is what the type
+// used to look like here.
+const VIEW_W = 320
+const VIEW_H = 200
+const PAD_X = 4
+const PAD_TOP = 18
 const PAD_BOTTOM = 10
 /** Room on the right for the target figure, so it never sits over a bar. */
-const GUTTER = 52
+const GUTTER = 46
 
 /**
  * The week's water against the target.
@@ -61,8 +65,9 @@ export function WaterWeek({
   const ceiling = Math.max(targetMl, ...days.map((day) => day.ml)) * 1.12 || 1
   const plotW = VIEW_W - PAD_X * 2 - GUTTER
   const band = plotW / days.length
-  // Slim and capped: a seventh of the width is a block, not a bar.
-  const barW = Math.min(Math.max(6, band - 16), 34)
+  // Slim and capped: a seventh of the width is a block, not a bar. Held as a
+  // fraction of the band so it stays the same bar whatever the viewBox is.
+  const barW = Math.min(Math.max(6, band * 0.45), 30)
   const y = (ml: number) =>
     PAD_TOP + (1 - ml / ceiling) * (VIEW_H - PAD_TOP - PAD_BOTTOM)
   const baseline = VIEW_H - PAD_BOTTOM
@@ -96,7 +101,7 @@ export function WaterWeek({
 
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="h-32 w-full touch-none"
+        className="h-48 w-full touch-none"
         preserveAspectRatio="none"
         role="img"
         aria-label={`Water over the last ${days.length} days against a ${formatNumber(targetMl)} ml target; reached on ${met} of them.`}
@@ -191,7 +196,7 @@ export function WaterWeek({
         </g>
       </svg>
 
-      <ol className="flex gap-0.5 pr-[8.7%]">
+      <ol className="flex gap-0.5 pr-[15.6%]">
         {days.map((day, index) => (
           <li
             key={day.date}

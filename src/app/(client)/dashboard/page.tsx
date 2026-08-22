@@ -105,24 +105,30 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Water, last 7 days
-        </h2>
-        <WaterWeek days={waterWeek} targetMl={client.water_target_ml} today={today} />
-      </section>
+      {/* Side by side from tablet up. Two charts of the same week read as one
+          picture of it; stacked, the second is a scroll away from the first.
+          Phones keep them stacked — seven bars and a fortnight of them do not
+          fit in half of 430px. */}
+      <div className="grid gap-6 sm:grid-cols-2">
+        <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Water, last 7 days
+          </h2>
+          <WaterWeek days={waterWeek} targetMl={client.water_target_ml} today={today} />
+        </section>
 
-      <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Weight against your start
-        </h2>
-        <WeightSinceStart
-          points={weights}
-          startKg={baseline}
-          baselineIsFirstLog={profileStart === null}
-          today={today}
-        />
-      </section>
+        <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Weight against your start
+          </h2>
+          <WeightSinceStart
+            points={weights}
+            startKg={baseline}
+            baselineIsFirstLog={profileStart === null}
+            today={today}
+          />
+        </section>
+      </div>
 
       {stressEnergy.length >= 3 ? (
         <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
