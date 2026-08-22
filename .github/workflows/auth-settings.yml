@@ -1,0 +1,124 @@
+# Applies Supabase Auth settings that live in a dashboard rather than in this
+# repo — the sign-up confirmation toggle, and the SMTP credentials behind every
+# confirmation and password-reset email.
+#
+# It exists because those settings are reachable only with a Supabase access
+# token, and a token belongs in repository secrets rather than in a chat log or
+# a checked-in file. Run it from the Actions tab; nothing here fires on a push.
+#
+# Needs one secret: SUPABASE_ACCESS_TOKEN
+#   https://supabase.com/dashboard/account/tokens
+#
+# SMTP is read from secrets too, never from the inputs below — a workflow input
+# is echoed into the run's logs, which is no place for a password.
+
+name: Auth settings
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_email:
+        description: 'Require email confirmation on sign-up'
+        type: choice
+        options: [leave, 'on', 'off']
+        default: leave
+      apply_smtp:
+        description: 'Push SMTP settings from repository secrets'
+        type: boolean
+        default: false
+
+concurrency: auth-settings
+
+env:
+  PROJECT_REF: gezrztmxyxbtbbasvbix
+  API: https://api.supabase.com/v1
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the token is present
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Show the settings as they are now
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          # Only the handful of fields this workflow touches — the full config
+          # response is long and carries values worth not printing.
+          curl -sS --fail-with-body \
+            -H "Authorization: Bearer $TOKEN" \
+            "$API/projects/$PROJECT_REF/config/auth" \
+          | jq '{mailer_autoconfirm, smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name, rate_limit_email_sent}'
+
+      - name: Set the confirmation toggle
+        if: inputs.confirm_email != 'leave'
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          # "Confirm email ON" is mailer_autoconfirm FALSE — the field says
+          # whether to skip confirming, not whether to require it.
+          if [ "${{ inputs.confirm_email }}" = "on" ]; then AUTOCONFIRM=false; else AUTOCONFIRM=true; fi
+          echo "Confirm email → ${{ inputs.confirm_email }} (mailer_autoconfirm=$AUTOCONFIRM)"
+
+          curl -sS --fail-with-body -X PATCH \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"mailer_autoconfirm\": $AUTOCONFIRM}" \
+            "$API/projects/$PROJECT_REF/config/auth" \
+          | jq '{mailer_autoconfirm}'
+
+      - name: Push the SMTP settings
+        if: inputs.apply_smtp
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          SMTP_SENDER_NAME: ${{ secrets.SMTP_SENDER_NAME }}
+        run: |
+          missing=""
+          for name in SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_SENDER; do
+            [ -z "${!name}" ] && missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing secret(s):$missing"
+            exit 1
+          fi
+
+          # jq builds the body so a password containing quotes or backslashes
+          # cannot break out of the JSON.
+          jq -n \
+            --arg host "$SMTP_HOST" --argjson port "$SMTP_PORT" \
+            --arg user "$SMTP_USER" --arg pass "$SMTP_PASS" \
+            --arg sender "$SMTP_SENDER" \
+            --arg sender_name "${SMTP_SENDER_NAME:-nutri}" \
+            '{smtp_host:$host, smtp_port:$port, smtp_user:$user, smtp_pass:$pass,
+              smtp_admin_email:$sender, smtp_sender_name:$sender_name}' \
+          > body.json
+
+          curl -sS --fail-with-body -X PATCH \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @body.json \
+            "$API/projects/$PROJECT_REF/config/auth" \
+          | jq '{smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name}'
+
+          rm -f body.json
+
+      - name: Show the settings as they now are
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          curl -sS --fail-with-body \
+            -H "Authorization: Bearer $TOKEN" \
+            "$API/projects/$PROJECT_REF/config/auth" \
+          | jq '{mailer_autoconfirm, smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name, rate_limit_email_sent}'
