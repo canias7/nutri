@@ -9,7 +9,15 @@ const optionalNumber = z
     message: 'Enter a number',
   })
 
-export const onboardingSchema = z.object({
+/**
+ * What onboarding asks for: the measurements a target can be worked out from.
+ *
+ * It used to ask for the goal, the water target and four boxes about how you
+ * feel, before anyone had logged a single day. Every one of those is on the
+ * profile, which is where a person is willing to sit and think — the door into
+ * the app is not.
+ */
+export const biometricsSchema = z.object({
   age: optionalNumber.refine(
     (value) => value === undefined || (value >= 1 && value <= 130),
     { message: 'Enter an age between 1 and 130' },
@@ -23,7 +31,10 @@ export const onboardingSchema = z.object({
     (value) => value === undefined || (value >= 10 && value <= 500),
     { message: 'Enter a realistic weight' },
   ),
+})
 
+/** The rest of the picture, asked for on the profile once someone is inside. */
+export const programSchema = z.object({
   goal: z.string().trim().min(1, 'Tell us what you want to achieve').max(500),
   goalDeadline: z
     .string()
@@ -44,4 +55,5 @@ export const onboardingSchema = z.object({
   ),
 })
 
-export type OnboardingInput = z.infer<typeof onboardingSchema>
+export type BiometricsInput = z.infer<typeof biometricsSchema>
+export type ProgramInput = z.infer<typeof programSchema>

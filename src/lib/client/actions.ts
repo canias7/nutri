@@ -6,21 +6,9 @@ import { requireClient } from '@/lib/auth/session'
 import { failed, field, invalid, type FormState } from '@/lib/forms'
 import { createClient } from '@/lib/supabase/server'
 
-import { onboardingSchema } from './onboarding'
+import { biometricsSchema } from './onboarding'
 
-const TEXT_FIELDS = [
-  'age',
-  'gender',
-  'heightCm',
-  'startWeightKg',
-  'goal',
-  'goalDeadline',
-  'complaintEmotional',
-  'complaintDigestion',
-  'complaintSkin',
-  'complaintOther',
-  'waterTargetMl',
-] as const
+const TEXT_FIELDS = ['age', 'gender', 'heightCm', 'startWeightKg'] as const
 
 export async function completeOnboarding(
   _previous: FormState,
@@ -30,7 +18,7 @@ export async function completeOnboarding(
     TEXT_FIELDS.map((name) => [name, field(formData, name)]),
   ) as Record<string, string>
 
-  const parsed = onboardingSchema.safeParse(values)
+  const parsed = biometricsSchema.safeParse(values)
   if (!parsed.success) return invalid(parsed.error, values)
 
   const { viewer } = await requireClient()
@@ -46,15 +34,10 @@ export async function completeOnboarding(
       gender: input.gender || null,
       height_cm: input.heightCm ?? null,
       start_weight_kg: input.startWeightKg ?? null,
-      goal: input.goal,
-      goal_deadline: input.goalDeadline,
-      initial_complaints: {
-        emotional: input.complaintEmotional ?? '',
-        digestion: input.complaintDigestion ?? '',
-        skin: input.complaintSkin ?? '',
-        other: input.complaintOther ?? '',
-      },
-      ...(input.waterTargetMl ? { water_target_ml: input.waterTargetMl } : {}),
+      // The goal, the water target and the complaints are not written here.
+      // They are asked for on the profile, and their columns already default to
+      // something usable — '' , 2000 ml and {} — so a day logged before anyone
+      // fills them in still works.
       onboarding_completed_at: new Date().toISOString(),
     })
     .eq('profile_id', viewer.id)

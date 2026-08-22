@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import type { ReactNode } from 'react'
 
-import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
+import { Field, FormMessage, Input } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
 import { LengthInput } from '@/components/units/length-input'
 import { UnitToggle } from '@/components/units/unit-provider'
@@ -71,115 +71,6 @@ export function OnboardingForm() {
           </span>
           <UnitToggle />
         </div>
-      </Section>
-
-      <Section title="Your goal" description="What are you working towards?">
-        <Field
-          label="Main program goal"
-          htmlFor="goal"
-          errors={errors('goal')}
-        >
-          <Textarea
-            id="goal"
-            name="goal"
-            placeholder="e.g. lose 5 kg, settle my digestion, sleep better"
-            defaultValue={value('goal')}
-            invalid={Boolean(errors('goal'))}
-            required
-          />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Target date"
-            htmlFor="goalDeadline"
-            hint="Optional."
-            errors={errors('goalDeadline')}
-          >
-            <Input
-              id="goalDeadline"
-              name="goalDeadline"
-              type="date"
-              defaultValue={value('goalDeadline')}
-              invalid={Boolean(errors('goalDeadline'))}
-            />
-          </Field>
-
-          <Field
-            label="Daily water target (ml)"
-            htmlFor="waterTargetMl"
-            hint="Defaults to 2000 ml."
-            errors={errors('waterTargetMl')}
-          >
-            <Input
-              id="waterTargetMl"
-              name="waterTargetMl"
-              type="number"
-              inputMode="numeric"
-              step="50"
-              placeholder="2000"
-              defaultValue={value('waterTargetMl')}
-              invalid={Boolean(errors('waterTargetMl'))}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <Section
-        title="How you feel right now"
-        description="Your starting point, so progress can be measured against something."
-      >
-        <Field
-          label="Emotional state & sleep"
-          htmlFor="complaintEmotional"
-          errors={errors('complaintEmotional')}
-        >
-          <Textarea
-            id="complaintEmotional"
-            name="complaintEmotional"
-            placeholder="Irritable in the afternoons, wake at 3am…"
-            defaultValue={value('complaintEmotional')}
-          />
-        </Field>
-
-        <Field
-          label="Digestion & gut"
-          htmlFor="complaintDigestion"
-          errors={errors('complaintDigestion')}
-        >
-          <Textarea
-            id="complaintDigestion"
-            name="complaintDigestion"
-            placeholder="Bloating after lunch, heartburn…"
-            defaultValue={value('complaintDigestion')}
-          />
-        </Field>
-
-        <Field
-          label="Skin, hair & nails"
-          htmlFor="complaintSkin"
-          errors={errors('complaintSkin')}
-        >
-          <Textarea
-            id="complaintSkin"
-            name="complaintSkin"
-            placeholder="Dry patches, breakouts along the jaw…"
-            defaultValue={value('complaintSkin')}
-          />
-        </Field>
-
-        <Field
-          label="Anything else"
-          htmlFor="complaintOther"
-          errors={errors('complaintOther')}
-        >
-          <Textarea
-            id="complaintOther"
-            name="complaintOther"
-            placeholder="Headaches, sugar cravings, afternoon slump…"
-            defaultValue={value('complaintOther')}
-          />
-        </Field>
       </Section>
 
       <SubmitButton pendingLabel="Setting up…">Start my program</SubmitButton>

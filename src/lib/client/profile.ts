@@ -7,11 +7,11 @@ import { requireClient } from '@/lib/auth/session'
 import { failed, field, invalid, type FormState } from '@/lib/forms'
 import { createClient } from '@/lib/supabase/server'
 
-import { onboardingSchema } from './onboarding'
+import { biometricsSchema, programSchema } from './onboarding'
 
-// The same answers as onboarding, plus the name, which onboarding takes at
-// sign-up instead.
-const profileSchema = onboardingSchema.extend({
+// Everything: the biometrics onboarding collects, the goal and complaints it no
+// longer does, and the name, which sign-up takes instead.
+const profileSchema = biometricsSchema.merge(programSchema).extend({
   fullName: z.string().trim().min(1, 'Please enter your name').max(120),
 })
 
