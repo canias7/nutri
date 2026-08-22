@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { WeightText } from '@/components/units/readouts'
 import { requireClient } from '@/lib/auth/session'
 import { addDays, formatShortDate } from '@/lib/diary/date'
 import { resolveToday } from '@/lib/diary/today'
@@ -62,7 +63,11 @@ export default async function HistoryPage() {
                 </span>
 
                 <span className="flex gap-3 text-sm tabular-nums text-slate-500 dark:text-slate-400">
-                  {log?.weight_kg ? <span>{Number(log.weight_kg).toFixed(1)} kg</span> : null}
+                  {log?.weight_kg ? (
+                    <span>
+                      <WeightText kg={Number(log.weight_kg)} />
+                    </span>
+                  ) : null}
                   {log && log.water_total_ml > 0 ? (
                     <span>{formatNumber(log.water_total_ml)} ml</span>
                   ) : null}

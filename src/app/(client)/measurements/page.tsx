@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { MeasureCell } from '@/components/measurements/measure-cell'
+import { LengthUnitName } from '@/components/units/readouts'
 import { MeasurementsForm } from '@/components/measurements/measurements-form'
 import { MeasurementTrend } from '@/components/measurements/measurement-trend'
 import { SITES, siteColumn } from '@/lib/client/measurement-sites'
@@ -84,7 +86,8 @@ export default async function MeasurementsPage() {
             </table>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Change is shown against the set before it.
+            Measurements are in <LengthUnitName />; change is shown against the
+            set before it.
           </p>
         </section>
       ) : null}
@@ -98,11 +101,11 @@ function Row({ row, previous }: { row: Measurement; previous?: Measurement }) {
       <td className="px-4 py-2.5 whitespace-nowrap font-medium">
         {formatShortDate(row.measured_on)}
       </td>
-      <Cell value={row.weight_kg} before={previous?.weight_kg} unit="kg" />
+      <MeasureCell value={row.weight_kg} before={previous?.weight_kg} measure="weight" />
       {SITES.map((site) => {
         const column = siteColumn(site.name) as keyof Measurement
         return (
-          <Cell
+          <MeasureCell
             key={site.name}
             value={row[column] as number | null}
             before={previous?.[column] as number | null | undefined}
@@ -110,41 +113,5 @@ function Row({ row, previous }: { row: Measurement; previous?: Measurement }) {
         )
       })}
     </tr>
-  )
-}
-
-function Cell({
-  value,
-  before,
-  unit,
-}: {
-  value: number | null
-  before?: number | null
-  unit?: string
-}) {
-  if (value === null) {
-    return <td className="px-4 py-2.5 text-slate-400 dark:text-slate-600">—</td>
-  }
-
-  const delta =
-    before === null || before === undefined ? null : Number(value) - Number(before)
-
-  return (
-    <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-      {Number(value).toFixed(1)}
-      {unit ? <span className="text-xs text-slate-500"> {unit}</span> : null}
-      {delta !== null && Math.abs(delta) >= 0.05 ? (
-        <span
-          className={`ml-1.5 text-xs font-medium ${
-            delta < 0
-              ? 'text-emerald-700 dark:text-emerald-400'
-              : 'text-slate-500 dark:text-slate-400'
-          }`}
-        >
-          {delta > 0 ? '+' : ''}
-          {delta.toFixed(1)}
-        </span>
-      ) : null}
-    </td>
   )
 }

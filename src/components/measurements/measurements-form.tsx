@@ -5,7 +5,8 @@ import { useActionState, useRef, useState } from 'react'
 import { BodyMap } from '@/components/measurements/body-map'
 import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
-import { MeasureInput } from '@/components/units/measure-input'
+import { LengthInput } from '@/components/units/length-input'
+import { WeightInput } from '@/components/units/weight-input'
 import { UnitToggle } from '@/components/units/unit-provider'
 import { saveMeasurements } from '@/lib/client/measurements'
 import { SITES, siteColumn } from '@/lib/client/measurement-sites'
@@ -84,10 +85,9 @@ export function MeasurementsForm({
           </Field>
 
           <Field label="Weight" htmlFor="weightKg">
-            <MeasureInput
+            <WeightInput
               id="weightKg"
               name="weightKg"
-              measure="weight"
               storedValue={previous('weight_kg')}
               placeholder="70.5"
             />
@@ -97,10 +97,9 @@ export function MeasurementsForm({
         <div className="grid gap-4 sm:grid-cols-2">
           {SITES.map((site) => (
             <Field key={site.name} label={site.label} htmlFor={site.name}>
-              <MeasureInput
+              <LengthInput
                 id={site.name}
                 name={site.name}
-                measure="length"
                 storedValue={previous(siteColumn(site.name))}
               />
             </Field>

@@ -4,6 +4,8 @@ import { useActionState } from 'react'
 
 import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
+import { LengthInput } from '@/components/units/length-input'
+import { WeightInput } from '@/components/units/weight-input'
 import { linkCoach, updateProfile } from '@/lib/client/profile'
 import { idleFormState } from '@/lib/forms'
 import type { ClientRow } from '@/lib/auth/session'
@@ -129,32 +131,24 @@ export function ProfileForm({
             <Input id="gender" name="gender" defaultValue={value('gender', client.gender)} />
           </Field>
 
-          <Field label="Height (cm)" htmlFor="heightCm" errors={errors('heightCm')}>
-            <Input
+          <Field label="Height" htmlFor="heightCm" errors={errors('heightCm')}>
+            <LengthInput
               id="heightCm"
               name="heightCm"
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              defaultValue={value('heightCm', client.height_cm)}
-              invalid={Boolean(errors('heightCm'))}
+              storedValue={client.height_cm}
             />
           </Field>
 
           <Field
-            label="Starting weight (kg)"
+            label="Starting weight"
             htmlFor="startWeightKg"
             hint="Your baseline — progress is measured against it."
             errors={errors('startWeightKg')}
           >
-            <Input
+            <WeightInput
               id="startWeightKg"
               name="startWeightKg"
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              defaultValue={value('startWeightKg', client.start_weight_kg)}
-              invalid={Boolean(errors('startWeightKg'))}
+              storedValue={client.start_weight_kg}
             />
           </Field>
         </div>

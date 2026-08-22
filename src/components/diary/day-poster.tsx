@@ -2,7 +2,9 @@
 
 import { useRef, useState } from 'react'
 
+import { useUnits } from '@/components/units/unit-provider'
 import { formatNumber } from '@/lib/format'
+import { formatWeight } from '@/lib/units'
 
 export type PosterData = {
   dateLabel: string
@@ -35,6 +37,7 @@ export function DayPoster({ data }: { data: PosterData }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const { system } = useUnits()
 
   async function build() {
     setBusy(true)
@@ -71,7 +74,7 @@ export function DayPoster({ data }: { data: PosterData }) {
     y += 90
     const stats: [string, string][] = [
       ['Water', `${formatNumber(data.waterMl)} / ${formatNumber(data.waterTargetMl)} ml`],
-      ['Weight', data.weightKg === null ? '—' : `${data.weightKg.toFixed(1)} kg`],
+      ['Weight', data.weightKg === null ? '—' : formatWeight(data.weightKg, system)],
       ['Energy', data.energy === null ? '—' : `${data.energy}/10`],
       ['Stress', data.stress === null ? '—' : `${data.stress}/10`],
     ]

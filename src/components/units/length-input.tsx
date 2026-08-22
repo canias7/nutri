@@ -4,34 +4,31 @@ import { useState } from 'react'
 
 import { Input } from '@/components/form-fields'
 import { useUnits } from '@/components/units/unit-provider'
-import { round, units, type Measure } from '@/lib/units'
-import type { UnitSystem } from '@/lib/units'
+import { length, round, type UnitSystem } from '@/lib/units'
 
 /**
- * A number entered in whichever units the reader prefers, submitted in metric.
+ * A length entered in whichever units the reader prefers, submitted in metric.
  *
  * The visible field carries no name, so it never reaches the server; a hidden
  * field alongside it holds the converted value. Every unit decision stays on the
- * client and the database only ever sees kg and cm — no guessing later about
- * what a bare "62" meant.
+ * client and the database only ever sees centimetres — no guessing later about
+ * what a bare "62" meant. Weight has its own component, because imperial weight
+ * is two boxes rather than one.
  */
-export function MeasureInput({
+export function LengthInput({
   id,
   name,
-  measure,
   storedValue,
   placeholder,
   required,
 }: {
   id: string
   name: string
-  measure: Measure
   storedValue?: number | null
   placeholder?: string
   required?: boolean
 }) {
   const { system } = useUnits()
-  const converter = units[measure]
 
   // What was typed, the units it was typed in, and its metric equivalent. Held
   // together so switching units can be derived during render rather than synced
@@ -51,7 +48,7 @@ export function MeasureInput({
       ? entry.raw
       : entry.storage === ''
         ? ''
-        : String(round(converter.toDisplay(Number(entry.storage), system), 1))
+        : String(round(length.toDisplay(Number(entry.storage), system), 1))
 
   function handleChange(raw: string) {
     if (raw === '') {
@@ -60,10 +57,17 @@ export function MeasureInput({
     }
     const value = Number(raw)
     const storage = Number.isFinite(value)
-      ? String(round(converter.toStorage(value, system), 2))
+      ? String(round(length.toStorage(value, system), 2))
       : ''
     setEntry({ raw, system, storage })
   }
+
+  // Placeholders are written in centimetres like everything else, so they get
+  // converted too — "172" is a nonsense hint next to a box wanting inches.
+  const hint =
+    placeholder === undefined || !Number.isFinite(Number(placeholder))
+      ? placeholder
+      : String(round(length.toDisplay(Number(placeholder), system), 0))
 
   return (
     <div className="flex items-center gap-2">
@@ -72,13 +76,13 @@ export function MeasureInput({
         type="number"
         inputMode="decimal"
         step="0.1"
-        placeholder={placeholder}
+        placeholder={hint}
         value={display}
         onChange={(event) => handleChange(event.target.value)}
         required={required}
       />
       <span className="w-6 shrink-0 text-sm text-slate-500 dark:text-slate-400">
-        {converter.label(system)}
+        {length.label(system)}
       </span>
       <input type="hidden" name={name} value={entry.storage} />
     </div>

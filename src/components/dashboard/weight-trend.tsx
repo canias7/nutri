@@ -2,7 +2,10 @@
 
 import { useRef, useState } from 'react'
 
+import { UNIT_SUFFIX, WeightText } from '@/components/units/readouts'
+import { useUnits } from '@/components/units/unit-provider'
 import { formatShortDate } from '@/lib/diary/date'
+import { formatWeight } from '@/lib/units'
 
 export type WeightPoint = { date: string; kg: number }
 
@@ -18,6 +21,9 @@ const PAD_Y = 18
 export function WeightTrend({ points }: { points: WeightPoint[] }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [active, setActive] = useState<number | null>(null)
+  // The line itself stays in kilograms: pounds are a linear scale of them, so
+  // converting would redraw exactly the same shape. Only the readings change.
+  const { system } = useUnits()
 
   const values = points.map((p) => p.kg)
   const min = Math.min(...values)
@@ -52,10 +58,7 @@ export function WeightTrend({ points }: { points: WeightPoint[] }) {
     <figure className="m-0 flex flex-col gap-2">
       <figcaption className="flex items-baseline justify-between gap-3">
         <span className="text-2xl font-semibold tabular-nums">
-          {shownPoint.kg.toFixed(1)}
-          <span className="ml-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            kg
-          </span>
+          <WeightText kg={shownPoint.kg} unitClassName={UNIT_SUFFIX} />
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {formatShortDate(shownPoint.date)}
@@ -70,7 +73,7 @@ export function WeightTrend({ points }: { points: WeightPoint[] }) {
         onPointerMove={handleMove}
         onPointerLeave={() => setActive(null)}
         role="img"
-        aria-label={`Weight over the last ${points.length} logged days, from ${points[0].kg.toFixed(1)} to ${points[last].kg.toFixed(1)} kilograms`}
+        aria-label={`Weight over the last ${points.length} logged days, from ${formatWeight(points[0].kg, system)} to ${formatWeight(points[last].kg, system)}`}
       >
         <defs>
           <linearGradient id="weight-fill" x1="0" y1="0" x2="0" y2="1">
@@ -141,7 +144,9 @@ export function WeightTrend({ points }: { points: WeightPoint[] }) {
               {points.map((point) => (
                 <tr key={point.date} className="border-t border-black/5 dark:border-white/10">
                   <td className="py-1.5 pr-4">{formatShortDate(point.date)}</td>
-                  <td className="py-1.5 tabular-nums">{point.kg.toFixed(1)} kg</td>
+                  <td className="py-1.5 tabular-nums">
+                    <WeightText kg={point.kg} />
+                  </td>
                 </tr>
               ))}
             </tbody>

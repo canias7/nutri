@@ -5,6 +5,9 @@ import type { ReactNode } from 'react'
 
 import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
+import { LengthInput } from '@/components/units/length-input'
+import { UnitToggle } from '@/components/units/unit-provider'
+import { WeightInput } from '@/components/units/weight-input'
 import { completeOnboarding } from '@/lib/client/actions'
 import { idleFormState } from '@/lib/forms'
 
@@ -68,35 +71,27 @@ export function OnboardingForm() {
             />
           </Field>
 
-          <Field label="Height (cm)" htmlFor="heightCm" errors={errors('heightCm')}>
-            <Input
-              id="heightCm"
-              name="heightCm"
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              placeholder="172"
-              defaultValue={value('heightCm')}
-              invalid={Boolean(errors('heightCm'))}
-            />
+          <Field label="Height" htmlFor="heightCm" errors={errors('heightCm')}>
+            <LengthInput id="heightCm" name="heightCm" placeholder="172" />
           </Field>
 
           <Field
-            label="Starting weight (kg)"
+            label="Starting weight"
             htmlFor="startWeightKg"
             errors={errors('startWeightKg')}
           >
-            <Input
-              id="startWeightKg"
-              name="startWeightKg"
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              placeholder="70.5"
-              defaultValue={value('startWeightKg')}
-              invalid={Boolean(errors('startWeightKg'))}
-            />
+            <WeightInput id="startWeightKg" name="startWeightKg" placeholder="70.5" />
           </Field>
+        </div>
+
+        {/* Offered here rather than buried in settings: this is the first time
+            anyone is asked for a height, and asking in the wrong unit is how a
+            form gets abandoned. */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-slate-600 dark:text-slate-400">
+            Enter height and weight in
+          </span>
+          <UnitToggle />
         </div>
       </Section>
 

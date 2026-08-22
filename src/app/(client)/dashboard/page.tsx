@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import { StressEnergy } from '@/components/dashboard/stress-energy'
 import { WeightTrend } from '@/components/dashboard/weight-trend'
+import { UNIT_SUFFIX, WeightChangeText, WeightText } from '@/components/units/readouts'
 import { requireClient } from '@/lib/auth/session'
 import { formatShortDate, streakFrom } from '@/lib/diary/date'
 import { formatNumber } from '@/lib/format'
@@ -138,12 +140,21 @@ export default async function DashboardPage() {
         />
         <Stat
           label="Weight"
-          value={latestWeight ? latestWeight.kg.toFixed(1) : '—'}
-          unit={latestWeight ? 'kg' : undefined}
+          value={
+            latestWeight ? (
+              <WeightText kg={latestWeight.kg} unitClassName={UNIT_SUFFIX} />
+            ) : (
+              '—'
+            )
+          }
           hint={
-            change === null
-              ? 'Log it each morning'
-              : `${change >= 0 ? '+' : ''}${change.toFixed(1)} kg since starting`
+            change === null ? (
+              'Log it each morning'
+            ) : (
+              <>
+                <WeightChangeText kg={change} /> since starting
+              </>
+            )
           }
         />
         <Stat
@@ -227,7 +238,11 @@ export default async function DashboardPage() {
                     {log.log_date === today ? 'Today' : formatShortDate(log.log_date)}
                   </span>
                   <span className="flex gap-3 tabular-nums text-slate-500 dark:text-slate-400">
-                    {log.weight_kg ? <span>{Number(log.weight_kg).toFixed(1)} kg</span> : null}
+                    {log.weight_kg ? (
+                      <span>
+                        <WeightText kg={Number(log.weight_kg)} />
+                      </span>
+                    ) : null}
                     <span>{formatNumber(log.water_total_ml)} ml</span>
                   </span>
                 </Link>
@@ -248,9 +263,9 @@ function Stat({
   progress,
 }: {
   label: string
-  value: string
+  value: ReactNode
   unit?: string
-  hint: string
+  hint: ReactNode
   progress?: number
 }) {
   return (

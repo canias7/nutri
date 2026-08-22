@@ -2,8 +2,11 @@
 
 import { useState } from 'react'
 
+import { LengthText, UNIT_SUFFIX } from '@/components/units/readouts'
+import { useUnits } from '@/components/units/unit-provider'
 import { SITES, siteColumn } from '@/lib/client/measurement-sites'
 import { formatShortDate } from '@/lib/diary/date'
+import { formatLength, length, round } from '@/lib/units'
 
 // Same validated accent as the other charts: inside the lightness band and above
 // 3:1 contrast on both surfaces.
@@ -89,6 +92,8 @@ function Chart({
   active: number | null
   setActive: (index: number | null) => void
 }) {
+  const { system } = useUnits()
+
   const values = points.map((p) => p.value)
   const min = Math.min(...values)
   const max = Math.max(...values)
@@ -110,8 +115,7 @@ function Chart({
     <figure className="m-0 flex flex-col gap-2">
       <figcaption className="flex items-baseline justify-between gap-3">
         <span className="text-2xl font-semibold tabular-nums">
-          {point.value.toFixed(1)}
-          <span className="ml-1 text-sm font-medium text-slate-500 dark:text-slate-400">cm</span>
+          <LengthText cm={point.value} unitClassName={UNIT_SUFFIX} />
         </span>
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {formatShortDate(point.date)}
@@ -125,7 +129,7 @@ function Chart({
             >
               {' '}
               ({change > 0 ? '+' : ''}
-              {change.toFixed(1)} overall)
+              {round(length.toDisplay(change, system), 1).toFixed(1)} overall)
             </span>
           ) : null}
         </span>
@@ -136,7 +140,7 @@ function Chart({
         className="h-36 w-full touch-none"
         preserveAspectRatio="none"
         role="img"
-        aria-label={`${label} across ${points.length} measurement sets, from ${points[0].value.toFixed(1)} to ${points[points.length - 1].value.toFixed(1)} centimetres`}
+        aria-label={`${label} across ${points.length} measurement sets, from ${formatLength(points[0].value, system)} to ${formatLength(points[points.length - 1].value, system)}`}
         onPointerLeave={() => setActive(null)}
         onPointerMove={(event) => {
           const rect = event.currentTarget.getBoundingClientRect()

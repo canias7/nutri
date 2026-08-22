@@ -19,11 +19,11 @@ export const onboardingSchema = z.object({
   gender: z.string().trim().max(40).optional(),
   heightCm: optionalNumber.refine(
     (value) => value === undefined || (value >= 30 && value <= 280),
-    { message: 'Enter a height in centimetres' },
+    { message: 'Enter a realistic height' },
   ),
   startWeightKg: optionalNumber.refine(
     (value) => value === undefined || (value >= 10 && value <= 500),
-    { message: 'Enter a weight in kilograms' },
+    { message: 'Enter a realistic weight' },
   ),
 
   goal: z.string().trim().min(1, 'Tell us what you want to achieve').max(500),
