@@ -1,9 +1,12 @@
--- Development seed: two accounts you can actually sign in with.
+-- Development seed: accounts you can actually sign in with.
 --
 --   Client       alex@nutritest.app  / Passw0rd123
---   Nutritionist dana@nutritest.app  / Passw0rd123   (invite code: dana_coach)
+--   Client       solo@nutritest.app  / Passw0rd123   (no nutritionist attached)
+--   Nutritionist dana@nutritest.app  / Passw0rd123
 --
--- Run against a development project only:
+-- Run against a development project only — never the production project. It
+-- deletes the accounts it is about to create, and a nutritionist seeded here is
+-- the one the_nutritionist() hands every client to:
 --   psql "$DATABASE_URL" -f supabase/seed.sql
 --
 -- Why not just call the sign-up API? Two reasons. Supabase validates that the
@@ -22,8 +25,7 @@
 create or replace function pg_temp.seed_user(
   email text,
   password text,
-  full_name text,
-  role text
+  full_name text
 ) returns uuid
 language plpgsql
 as $$
@@ -43,7 +45,7 @@ begin
     extensions.crypt(password, extensions.gen_salt('bf')),
     now(), now(), now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
-    jsonb_build_object('full_name', full_name, 'role', role),
+    jsonb_build_object('full_name', full_name),
     '', '', '', '', '', '', '', ''
   );
 
@@ -65,18 +67,19 @@ begin;
 delete from auth.users
 where email in ('alex@nutritest.app', 'dana@nutritest.app', 'solo@nutritest.app');
 
-select pg_temp.seed_user('alex@nutritest.app', 'Passw0rd123', 'Alex Morgan', 'client');
-select pg_temp.seed_user('dana@nutritest.app', 'Passw0rd123', 'Dana Reed', 'nutritionist');
+-- Every sign-up is a client now, including these: handle_new_user ignores the
+-- role in user metadata, because that field is whatever the browser sent.
+select pg_temp.seed_user('alex@nutritest.app', 'Passw0rd123', 'Alex Morgan');
+select pg_temp.seed_user('dana@nutritest.app', 'Passw0rd123', 'Dana Reed');
 -- A client with no nutritionist. Most of the app behaves differently for one —
--- messages, the discussion, the invite prompt — and a fixture is the only way to
--- exercise those without unpicking Alex's link.
-select pg_temp.seed_user('solo@nutritest.app', 'Passw0rd123', 'Sol Rivera', 'client');
+-- messages, the discussion, the dashboard's coach panel — and a fixture is the
+-- only way to exercise those without unpicking Alex's link.
+select pg_temp.seed_user('solo@nutritest.app', 'Passw0rd123', 'Sol Rivera');
 
-update public.nutritionists n
-set invite_code = 'dana_coach'
-from public.profiles p
-where p.id = n.profile_id
-  and p.email = 'dana@nutritest.app';
+-- The one supported way to make a nutritionist. It also attaches every client
+-- who signed up while there was nobody to attach them to — which is all of them,
+-- so Sol is detached again below.
+select private.make_nutritionist('dana@nutritest.app');
 
 -- The guard trigger reverts these columns for anyone who is not the owner, which
 -- is the point of it — the seed is the one place allowed to step around it.
@@ -84,7 +87,10 @@ alter table public.clients disable trigger clients_guard_columns;
 
 update public.clients c
 set goal = 'Sleep better and stop snacking at night',
-    onboarding_completed_at = now()
+    onboarding_completed_at = now(),
+    -- Sign-up attaches everyone to the one nutritionist, so being unattached is
+    -- now a state the seed has to create on purpose rather than one it inherits.
+    nutritionist_id = null
 from public.profiles p
 where p.id = c.profile_id
   and p.email = 'solo@nutritest.app';
@@ -93,7 +99,7 @@ alter table public.clients enable trigger clients_guard_columns;
 
 commit;
 
-select p.email, p.role, p.full_name, n.invite_code
+select p.email, p.role, p.full_name,
+       (select count(*) from public.clients c where c.nutritionist_id = p.id) as clients
 from public.profiles p
-left join public.nutritionists n on n.profile_id = p.id
-order by p.role;
+order by p.role, p.email;
