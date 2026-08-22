@@ -39,9 +39,10 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
     resolveToday(),
   ])
 
-  const [comments, coachName] = await Promise.all([
+  const [comments, coachName, photoUrls] = await Promise.all([
     day.log ? getDayComments(day.log.id, viewer.id) : Promise.resolve([]),
     getCoachName(client.nutritionist_id),
+    signPhotos(day.meals.map((meal) => meal.photo_path).filter(Boolean)),
   ])
   const hasUnread = comments.some((comment) => !comment.mine)
 
@@ -60,7 +61,12 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
         targetMl={client.water_target_ml}
       />
 
-      <FoodSection date={date} meals={day.meals} />
+      <FoodSection
+        date={date}
+        meals={day.meals}
+        clientId={viewer.id}
+        photoUrls={photoUrls}
+      />
 
       <DaytimeSection date={date} log={day.log} />
 
@@ -84,6 +90,28 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
       />
     </div>
   )
+}
+
+/**
+ * Short-lived links to the day's photos.
+ *
+ * The bucket is private, so nothing is readable without one of these — and they
+ * are minted per request rather than stored, so a link that leaks stops working
+ * within the hour.
+ */
+async function signPhotos(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+
+  const supabase = await createClient()
+  const { data } = await supabase.storage
+    .from('meal-photos')
+    .createSignedUrls(paths, 60 * 60)
+
+  const urls: Record<string, string> = {}
+  for (const row of data ?? []) {
+    if (row.path && row.signedUrl) urls[row.path] = row.signedUrl
+  }
+  return urls
 }
 
 async function getCoachName(nutritionistId: string | null): Promise<string | null> {

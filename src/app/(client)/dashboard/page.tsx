@@ -187,43 +187,6 @@ export default async function DashboardPage() {
         </p>
       </section>
 
-      {recent.length > 0 ? (
-        <section className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Recent days
-            </h2>
-            <Link
-              href="/history"
-              className="text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
-            >
-              All history
-            </Link>
-          </div>
-          <ul className="flex flex-col gap-1.5">
-            {recent.slice(0, 5).map((log) => (
-              <li key={log.id}>
-                <Link
-                  href={`/diary/${log.log_date}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-3 text-sm transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
-                >
-                  <span className="font-medium">
-                    {log.log_date === today ? 'Today' : formatShortDate(log.log_date)}
-                  </span>
-                  <span className="flex gap-3 tabular-nums text-slate-500 dark:text-slate-400">
-                    {log.weight_kg ? (
-                      <span>
-                        <WeightText kg={Number(log.weight_kg)} />
-                      </span>
-                    ) : null}
-                    <span>{formatNumber(log.water_total_ml)} ml</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </div>
   )
 }

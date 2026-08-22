@@ -163,6 +163,7 @@ export async function saveFood(
   const amount = formData.getAll('amount').map(String)
   const method = formData.getAll('method').map(String)
   const eatenAt = formData.getAll('eatenAt').map(String)
+  const photoPath = formData.getAll('photoPath').map(String)
 
   const log = await ensureLog(date)
   if (!log) return failed
@@ -174,18 +175,27 @@ export async function saveFood(
     amount: (amount[index] ?? '').trim(),
     method: (method[index] ?? '').trim(),
     eaten_at: eatenAt[index] ? eatenAt[index] : null,
+    photo_path: (photoPath[index] ?? '').trim(),
   }))
 
   // An entry with nothing in it is not an entry. Trailing blanks are simply not
   // written, so opening the section and closing it again leaves no trace.
   const filled = rows.filter(
-    (row) => row.eaten || row.amount || row.method || row.eaten_at,
+    (row) =>
+      row.eaten || row.amount || row.method || row.eaten_at || row.photo_path,
   )
   // Positions have to stay dense, or the unique key leaves gaps that the next
   // save collides with.
   const dense = filled.map((row, index) => ({ ...row, sort_order: index }))
 
   const supabase = await createClient()
+
+  // Read the photos already on file before overwriting, so any that the save
+  // drops can be taken out of the bucket too rather than left orphaned.
+  const { data: before } = await supabase
+    .from('log_meals')
+    .select('photo_path')
+    .eq('daily_log_id', log.id)
 
   if (dense.length > 0) {
     const { error } = await supabase
@@ -201,6 +211,17 @@ export async function saveFood(
     .gte('sort_order', dense.length)
 
   if (pruneError) return failed
+
+  const kept = new Set(dense.map((row) => row.photo_path).filter(Boolean))
+  const orphaned = (before ?? [])
+    .map((row) => row.photo_path)
+    .filter((path) => path && !kept.has(path))
+
+  // Best effort: a file left behind costs a few kilobytes, and a failure here
+  // is not worth telling someone their lunch did not save.
+  if (orphaned.length > 0) {
+    await supabase.storage.from('meal-photos').remove(orphaned)
+  }
 
   refresh(date)
   return saved

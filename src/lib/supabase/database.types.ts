@@ -367,6 +367,7 @@ export type Database = {
           eaten_at: string | null
           id: string
           method: string
+          photo_path: string
           slot: Database['public']['Enums']['meal_slot'] | null
           sort_order: number
           updated_at: string
@@ -379,6 +380,7 @@ export type Database = {
           eaten_at?: string | null
           id?: string
           method?: string
+          photo_path?: string
           slot?: Database['public']['Enums']['meal_slot'] | null
           sort_order?: number
           updated_at?: string
@@ -391,6 +393,7 @@ export type Database = {
           eaten_at?: string | null
           id?: string
           method?: string
+          photo_path?: string
           slot?: Database['public']['Enums']['meal_slot'] | null
           sort_order?: number
           updated_at?: string
