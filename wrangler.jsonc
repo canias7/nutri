@@ -18,6 +18,7 @@
   // in the environment that runs the build.
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://gezrztmxyxbtbbasvbix.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6"
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6",
+    "NEXT_PUBLIC_SITE_URL": "https://nutri.aniascapital.workers.dev"
   }
 }
