@@ -7,8 +7,10 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/diary', label: "Today's diary" },
   { href: '/history', label: 'History' },
+  { href: '/measurements', label: 'Measurements' },
   { href: '/supplements', label: 'Supplements' },
-  { href: '/profile', label: 'Profile & goals' },
+  { href: '/messages', label: 'Messages' },
+  { href: '/profile', label: 'Profile' },
 ]
 
 export default async function DashboardLayout({ children }: LayoutProps<'/'>) {
