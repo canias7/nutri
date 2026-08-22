@@ -10,32 +10,18 @@ export const metadata: Metadata = { title: 'Messages · nutri' }
 export default async function MessagesPage() {
   const { viewer, client } = await requireClient()
   const today = await resolveToday()
-
-  // An unlinked client still gets the conversation, with the composer closed and
-  // the reason in it — a bare card explaining the absence teaches nobody where
-  // messages will appear once there is somebody to send them to.
-  if (!client.nutritionist_id) {
-    return (
-      <Page>
-        <Chat
-          messages={[]}
-          coachName="Your nutritionist"
-          hasUnread={false}
-          today={today}
-          linked={false}
-        />
-      </Page>
-    )
-  }
-
   const supabase = await createClient()
 
+  // The thread does not wait on a nutritionist being linked. It belongs to the
+  // client either way, and whoever they link to later reads it from the top.
   const [{ data: coach }, { data: rows }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', client.nutritionist_id)
-      .maybeSingle(),
+    client.nutritionist_id
+      ? supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', client.nutritionist_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase
       .from('direct_messages')
       .select('id, body, created_at, author_id, read_at')
@@ -55,20 +41,6 @@ export default async function MessagesPage() {
   )
 
   return (
-    <Page>
-      <Chat
-        messages={messages}
-        coachName={coachName}
-        hasUnread={hasUnread}
-        today={today}
-        linked
-      />
-    </Page>
-  )
-}
-
-function Page({ children }: { children: React.ReactNode }) {
-  return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
@@ -76,7 +48,13 @@ function Page({ children }: { children: React.ReactNode }) {
           General questions and support.
         </p>
       </header>
-      {children}
+
+      <Chat
+        messages={messages}
+        coachName={coachName}
+        hasUnread={hasUnread}
+        today={today}
+      />
     </div>
   )
 }

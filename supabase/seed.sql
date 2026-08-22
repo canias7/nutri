@@ -63,16 +63,33 @@ $$;
 begin;
 
 delete from auth.users
-where email in ('alex@nutritest.app', 'dana@nutritest.app');
+where email in ('alex@nutritest.app', 'dana@nutritest.app', 'solo@nutritest.app');
 
 select pg_temp.seed_user('alex@nutritest.app', 'Passw0rd123', 'Alex Morgan', 'client');
 select pg_temp.seed_user('dana@nutritest.app', 'Passw0rd123', 'Dana Reed', 'nutritionist');
+-- A client with no nutritionist. Most of the app behaves differently for one —
+-- messages, the discussion, the invite prompt — and a fixture is the only way to
+-- exercise those without unpicking Alex's link.
+select pg_temp.seed_user('solo@nutritest.app', 'Passw0rd123', 'Sol Rivera', 'client');
 
 update public.nutritionists n
 set invite_code = 'dana_coach'
 from public.profiles p
 where p.id = n.profile_id
   and p.email = 'dana@nutritest.app';
+
+-- The guard trigger reverts these columns for anyone who is not the owner, which
+-- is the point of it — the seed is the one place allowed to step around it.
+alter table public.clients disable trigger clients_guard_columns;
+
+update public.clients c
+set goal = 'Sleep better and stop snacking at night',
+    onboarding_completed_at = now()
+from public.profiles p
+where p.id = c.profile_id
+  and p.email = 'solo@nutritest.app';
+
+alter table public.clients enable trigger clients_guard_columns;
 
 commit;
 

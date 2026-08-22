@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import {
   useEffect,
   useOptimistic,
@@ -38,14 +37,12 @@ export function Chat({
   coachName,
   hasUnread,
   today,
-  linked,
 }: {
   messages: ChatMessage[]
   coachName: string
   hasUnread: boolean
   /** The reader's own date, resolved on the server from their timezone. */
   today: string
-  linked: boolean
 }) {
   const [optimistic, addOptimistic] = useOptimistic<Shown[], string>(
     messages,
@@ -109,9 +106,7 @@ export function Chat({
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-semibold">{coachName}</span>
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">
-            {linked
-              ? 'General questions, not tied to a diary day'
-              : 'Nobody connected yet'}
+            General questions, not tied to a diary day
           </span>
         </span>
       </header>
@@ -125,7 +120,7 @@ export function Chat({
         aria-label={`Conversation with ${coachName}`}
       >
         {optimistic.length === 0 ? (
-          <Empty coachName={coachName} linked={linked} />
+          <Empty />
         ) : (
           <ol className="mt-auto flex flex-col gap-4">
             {groups.map((group) => (
@@ -177,8 +172,7 @@ export function Chat({
           ref={inputRef}
           name="body"
           rows={1}
-          disabled={!linked}
-          placeholder={linked ? `Message ${coachName}…` : 'Add an invite code to write'}
+          placeholder="Write a message…"
           aria-label="Your message"
           onInput={(event) => grow(event.currentTarget)}
           onKeyDown={(event) => {
@@ -193,7 +187,6 @@ export function Chat({
         />
         <button
           type="submit"
-          disabled={!linked}
           aria-label="Send"
           className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -257,7 +250,7 @@ function Bubble({
   )
 }
 
-function Empty({ coachName, linked }: { coachName: string; linked: boolean }) {
+function Empty() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
       <span
@@ -275,25 +268,10 @@ function Empty({ coachName, linked }: { coachName: string; linked: boolean }) {
           <path d="M20 14.5a2 2 0 0 1-2 2H8l-4 3.5v-14a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8.5Z" />
         </svg>
       </span>
-      {linked ? (
-        <p className="max-w-xs text-sm text-slate-500 dark:text-slate-400">
-          Nothing here yet. Ask {coachName} anything — this thread is for general
-          questions, separate from notes on a particular day.
-        </p>
-      ) : (
-        <>
-          <p className="max-w-xs text-sm text-slate-500 dark:text-slate-400">
-            You are not linked to a nutritionist yet, so there is nobody at the
-            other end. Add their invite code and this opens up.
-          </p>
-          <Link
-            href="/profile"
-            className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
-            Add an invite code
-          </Link>
-        </>
-      )}
+      <p className="max-w-xs text-sm text-slate-500 dark:text-slate-400">
+        Nothing here yet. Ask anything — this thread is for general questions,
+        separate from notes on a particular day.
+      </p>
     </div>
   )
 }

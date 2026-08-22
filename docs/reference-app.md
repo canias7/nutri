@@ -134,7 +134,9 @@ something else on purpose, so the difference does not keep getting read as a gap
   people actually fill in; `/history` still answers at its URL.
 - **Messages is a chat**, not a list with a form under it: newest at the bottom,
   a composer that does not scroll away, runs grouped, and a sent message on
-  screen before the server has it.
+  screen before the server has it. It is not gated on having a nutritionist —
+  the thread belongs to the client, and whoever they link to later reads it from
+  the top.
 
 **Units**
 

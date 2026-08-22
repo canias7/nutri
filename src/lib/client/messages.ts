@@ -15,11 +15,9 @@ export async function sendMessage(
     return { status: 'error', fieldErrors: { body: ['Write something first'] } }
   }
 
-  const { viewer, client } = await requireClient()
-  if (!client.nutritionist_id) {
-    return failed('You are not linked to a nutritionist yet.')
-  }
-
+  // Sending does not wait on a nutritionist being linked. The thread belongs to
+  // the client either way, and whoever they link to later reads it from the top.
+  const { viewer } = await requireClient()
   const supabase = await createClient()
   const { error } = await supabase.from('direct_messages').insert({
     client_id: viewer.id,
