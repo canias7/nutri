@@ -53,10 +53,13 @@ export function DiaryRow({
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="font-semibold">
             {title}
+            {/* The same asterisk the fields inside use, not a pictograph: ✳ is
+                in the emoji set and paints as a colour glyph on some platforms. */}
             {required ? (
-              <span aria-hidden className="ml-1 align-super text-[10px] text-red-500">
-                ✳
-              </span>
+              <>
+                <span aria-hidden className="ml-0.5 text-red-500">*</span>
+                <span className="sr-only"> (required)</span>
+              </>
             ) : null}
           </span>
           {summary ? (
