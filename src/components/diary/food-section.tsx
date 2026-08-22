@@ -1,8 +1,11 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { useRef, useState } from 'react'
 
 import { AutosaveSection, type AutosaveHandle } from '@/components/diary/autosave-section'
+import type { SectionNeed } from '@/lib/diary/completeness'
 import { Field, Input, Textarea } from '@/components/form-fields'
 import { MealPhotos } from '@/components/diary/meal-photos'
 import { saveFood } from '@/lib/diary/actions'
@@ -51,6 +54,8 @@ export function FoodSection({
   meals,
   clientId,
   photoUrls,
+  need,
+  summary,
 }: {
   date: string
   meals: LogMeal[]
@@ -58,6 +63,8 @@ export function FoodSection({
   clientId: string
   /** Short-lived signed URLs for the photos already on file, by object name. */
   photoUrls: Record<string, string>
+  need: SectionNeed
+  summary?: ReactNode
 }) {
 
   const [entries, setEntries] = useState<Entry[]>(() => fromMeals(meals))
@@ -93,6 +100,9 @@ export function FoodSection({
   return (
     <AutosaveSection
       ref={section}
+      icon="🍽️"
+      need={need}
+      summary={summary}
       title="Food"
       description="Everything you ate today, in the order you ate it."
       date={date}

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { requireClient } from '@/lib/auth/session'
+import { asList, missingFromDay } from '@/lib/diary/completeness'
 import { field } from '@/lib/forms'
 import { createClient } from '@/lib/supabase/server'
 import type { TablesUpdate } from '@/lib/supabase/database.types'
@@ -350,19 +351,18 @@ export async function postDay(
 
   if (!day) return failed
 
-  const missing: string[] = []
-  if (!day.wake_time) missing.push('wake-up time')
-  if (day.weight_kg === null) missing.push('morning weight')
-  if (day.energy_level === null) missing.push('energy level')
-  if ((drinks ?? []).length === 0) missing.push('something to drink')
-  if ((meals ?? []).length === 0) missing.push('what you ate')
-  else if ((meals ?? []).some((meal) => !meal.eaten.trim() || !meal.eaten_at)) {
-    missing.push('what you ate and when, on every entry')
-  }
-  if ((supplements ?? []).length > 0 && (taken ?? []).length === 0) {
-    missing.push('which supplements you took')
-  }
-  if (!day.bed_time) missing.push('what time you fell asleep')
+  // The same rules the diary's rows draw their pills from, so the button and the
+  // list can never disagree about whether a day is finished.
+  const missing = missingFromDay({
+    wakeTime: day.wake_time,
+    weightKg: day.weight_kg === null ? null : Number(day.weight_kg),
+    energyLevel: day.energy_level,
+    bedTime: day.bed_time,
+    drinkCount: (drinks ?? []).length,
+    meals: (meals ?? []).map((meal) => ({ eaten: meal.eaten, eatenAt: meal.eaten_at })),
+    activeSupplements: (supplements ?? []).length,
+    takenSupplements: (taken ?? []).length,
+  })
 
   if (missing.length > 0) {
     return {
@@ -381,8 +381,3 @@ export async function postDay(
   return saved
 }
 
-/** "a, b and c" — the way it would be read aloud. */
-function asList(items: string[]): string {
-  if (items.length === 1) return items[0]
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
-}

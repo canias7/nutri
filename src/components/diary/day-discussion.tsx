@@ -1,5 +1,10 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
+import { DiaryRow } from '@/components/diary/diary-row'
+import type { SectionNeed } from '@/lib/diary/completeness'
+
 import { useActionState, useEffect, useState } from 'react'
 
 import { FormMessage, Textarea } from '@/components/form-fields'
@@ -14,12 +19,16 @@ export function DayDiscussion({
   comments,
   coachName,
   hasUnread,
+  need,
+  summary,
 }: {
   date: string
   dailyLogId: string | null
   comments: DayComment[]
   coachName: string | null
   hasUnread: boolean
+  need: SectionNeed
+  summary?: ReactNode
 }) {
   const [state, action] = useActionState(postDayComment, idleFormState)
   // The box is controlled, so emptying it is part of sending rather than
@@ -38,13 +47,10 @@ export function DayDiscussion({
   }, [hasUnread, dailyLogId])
 
   return (
-    <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <header className="mb-4 flex flex-col gap-0.5">
-        <h2 className="font-semibold">Discussion</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Questions and answers about this day, kept with the day itself.
-        </p>
-      </header>
+    <DiaryRow icon="💬" title="Discussion" need={need} summary={summary}>
+      <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+        Questions and answers about this day, kept with the day itself.
+      </p>
 
       {comments.length === 0 ? (
         <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
@@ -111,6 +117,6 @@ export function DayDiscussion({
           Send
         </SubmitButton>
       </form>
-    </section>
+    </DiaryRow>
   )
 }

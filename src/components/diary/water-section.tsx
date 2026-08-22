@@ -1,11 +1,15 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { useActionState, useRef, useTransition } from 'react'
 
+import { DiaryRow } from '@/components/diary/diary-row'
 import { Field, FormMessage, Input } from '@/components/form-fields'
 import { addDrink, removeDrink } from '@/lib/diary/actions'
 import { idleSaveState } from '@/lib/diary/save-state'
 import { formatNumber } from '@/lib/format'
+import type { SectionNeed } from '@/lib/diary/completeness'
 import type { LogDrink } from '@/lib/diary/queries'
 
 export function WaterSection({
@@ -13,11 +17,15 @@ export function WaterSection({
   drinks,
   totalMl,
   targetMl,
+  need,
+  summary,
 }: {
   date: string
   drinks: LogDrink[]
   totalMl: number
   targetMl: number
+  need: SectionNeed
+  summary?: ReactNode
 }) {
   const [state, formAction, pending] = useActionState(addDrink, idleSaveState)
   const [removing, startRemoving] = useTransition()
@@ -26,18 +34,10 @@ export function WaterSection({
   const pct = Math.min(100, Math.round((totalMl / targetMl) * 100))
 
   return (
-    <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <header className="mb-4 flex flex-col gap-0.5">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="font-semibold">
-            Water &amp; drinks
-            <span aria-hidden className="ml-0.5 text-red-500">*</span>
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Everything you drink counts toward your target.
-          </p>
-        </div>
-      </header>
+    <DiaryRow icon="💧" title="Water & drinks" need={need} summary={summary}>
+      <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+        Everything you drink counts toward your target.
+      </p>
 
       <div className="mb-5 flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-3">
@@ -128,6 +128,6 @@ export function WaterSection({
           </div>
         </div>
       </form>
-    </section>
+    </DiaryRow>
   )
 }

@@ -11,7 +11,9 @@ import {
 } from 'react'
 import type { ReactNode, Ref } from 'react'
 
+import { DiaryRow } from '@/components/diary/diary-row'
 import { useDiarySections } from '@/components/diary/diary-sections'
+import type { SectionNeed } from '@/lib/diary/completeness'
 import { idleSaveState, type SaveState } from '@/lib/diary/save-state'
 
 /** Lets a section ask for a save when nothing in the form itself changed. */
@@ -41,6 +43,10 @@ const RETRY_DELAY_MS = 250
 export function AutosaveSection({
   title,
   description,
+  icon,
+  summary,
+  need,
+  defaultOpen,
   date,
   action,
   children,
@@ -48,6 +54,12 @@ export function AutosaveSection({
 }: {
   title: string
   description?: string
+  /** The emoji on the row. */
+  icon: string
+  /** What is already in the section, shown while the row is closed. */
+  summary?: ReactNode
+  need: SectionNeed
+  defaultOpen?: boolean
   date: string
   action: (state: SaveState, formData: FormData) => Promise<SaveState>
   children: ReactNode
@@ -139,17 +151,32 @@ export function AutosaveSection({
   // is no longer mounted.
   useEffect(() => clearTimer, [clearTimer])
 
+  // Computed, not rendered as <SaveStatus/>: the row falls back to its own pill
+  // when this is absent, and a JSX element is always truthy — passing one meant
+  // every row showed an empty badge and never its own state.
+  const saveNote =
+    state.status === 'error' ? (
+      <span role="alert" className="shrink-0 text-xs font-semibold text-red-600 dark:text-red-400">
+        {state.message ?? 'Not saved'}
+      </span>
+    ) : pending ? (
+      <Badge tone="muted">Saving…</Badge>
+    ) : dirty ? (
+      <Badge tone="muted">Unsaved</Badge>
+    ) : undefined
+
   return (
-    <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <header className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="font-semibold">{title}</h2>
-          {description ? (
-            <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
-          ) : null}
-        </div>
-        <SaveStatus pending={pending} dirty={dirty} state={state} />
-      </header>
+    <DiaryRow
+      icon={icon}
+      title={title}
+      summary={summary}
+      need={need}
+      defaultOpen={defaultOpen}
+      status={saveNote}
+    >
+      {description ? (
+        <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{description}</p>
+      ) : null}
 
       <form
         ref={formRef}
@@ -167,34 +194,8 @@ export function AutosaveSection({
         <input type="hidden" name="date" value={date} />
         {children}
       </form>
-    </section>
+    </DiaryRow>
   )
-}
-
-/**
- * Only the states worth acting on. A green "Saved" that lands after every
- * keystroke and then sits there says nothing the reader did not already assume.
- */
-function SaveStatus({
-  pending,
-  dirty,
-  state,
-}: {
-  pending: boolean
-  dirty: boolean
-  state: SaveState
-}) {
-  if (state.status === 'error') {
-    return (
-      <span role="alert" className="shrink-0 text-xs font-semibold text-red-600 dark:text-red-400">
-        {state.message ?? 'Not saved'}
-      </span>
-    )
-  }
-
-  if (pending) return <Badge tone="muted">Saving…</Badge>
-  if (dirty) return <Badge tone="muted">Unsaved</Badge>
-  return null
 }
 
 function Badge({ tone, children }: { tone: 'muted'; children: ReactNode }) {

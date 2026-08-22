@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { Field, Input, Textarea } from '@/components/form-fields'
 import { WeightInput } from '@/components/units/weight-input'
 import { AutosaveSection } from '@/components/diary/autosave-section'
@@ -10,18 +12,29 @@ import {
   saveExtraSupplements,
   saveMorning,
 } from '@/lib/diary/actions'
+import type { SectionNeed } from '@/lib/diary/completeness'
 import type { DailyLog } from '@/lib/diary/queries'
 
-type SectionProps = { date: string; log: DailyLog | null }
+type SectionProps = {
+  date: string
+  log: DailyLog | null
+  /** What this section still needs, so the row can draw its star and pill. */
+  need: SectionNeed
+  /** What is already in it, shown on the closed row. */
+  summary?: ReactNode
+}
 
 /** Times come back from Postgres as HH:MM:SS; the input wants HH:MM. */
 function toTimeInput(value: string | null | undefined): string {
   return value ? value.slice(0, 5) : ''
 }
 
-export function MorningSection({ date, log }: SectionProps) {
+export function MorningSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
+      icon="☀️"
+      need={need}
+      summary={summary}
       title="Morning"
       description="Weigh yourself before breakfast, on an empty stomach."
       date={date}
@@ -89,9 +102,12 @@ export function MorningSection({ date, log }: SectionProps) {
   )
 }
 
-export function DaytimeSection({ date, log }: SectionProps) {
+export function DaytimeSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
+      icon="🏃"
+      need={need}
+      summary={summary}
       title="Activity & stress"
       description="Movement, time outdoors, and how the day felt."
       date={date}
@@ -157,9 +173,12 @@ export function DaytimeSection({ date, log }: SectionProps) {
   )
 }
 
-export function ExtraSupplementsSection({ date, log }: SectionProps) {
+export function ExtraSupplementsSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
+      icon="🧴"
+      need={need}
+      summary={summary}
       title="Anything else you took"
       description="One-offs that are not on your regular list."
       date={date}
@@ -177,9 +196,12 @@ export function ExtraSupplementsSection({ date, log }: SectionProps) {
   )
 }
 
-export function EveningSection({ date, log }: SectionProps) {
+export function EveningSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
+      icon="🌙"
+      need={need}
+      summary={summary}
       title="Evening"
       description="How the day wound down."
       date={date}
@@ -217,9 +239,12 @@ export function EveningSection({ date, log }: SectionProps) {
   )
 }
 
-export function ComplaintsSection({ date, log }: SectionProps) {
+export function ComplaintsSection({ date, log, need, summary }: SectionProps) {
   return (
     <AutosaveSection
+      icon="🫀"
+      need={need}
+      summary={summary}
       title="How you felt"
       description="Symptoms and changes, however small. This is what your nutritionist reads most closely."
       date={date}
