@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { MeasurementsForm } from '@/components/measurements/measurements-form'
+import { MeasurementTrend } from '@/components/measurements/measurement-trend'
 import { SITES, siteColumn } from '@/lib/client/measurement-sites'
 import { requireClient } from '@/lib/auth/session'
 import { formatShortDate } from '@/lib/diary/date'
@@ -54,6 +55,8 @@ export default async function MeasurementsPage() {
       ) : null}
 
       <MeasurementsForm today={today} latest={latest} />
+
+      {history.length >= 2 ? <MeasurementTrend rows={history} /> : null}
 
       {history.length > 0 ? (
         <section className="flex flex-col gap-3">

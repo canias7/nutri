@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { ServiceWorker } from "@/components/service-worker";
 import { SessionRefresher } from "@/components/session-refresher";
 import { TimezoneCookie } from "@/components/timezone-cookie";
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <SessionRefresher />
         <TimezoneCookie />
+        <ServiceWorker />
         {children}
       </body>
     </html>
