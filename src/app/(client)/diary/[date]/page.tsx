@@ -81,10 +81,6 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
         coachName={coachName}
         hasUnread={hasUnread}
       />
-
-      <p className="pb-2 text-center text-sm text-slate-500 dark:text-slate-400">
-        Everything saves as you type. Come back through the day.
-      </p>
     </div>
   )
 }
