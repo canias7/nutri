@@ -1,0 +1,41 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main, claude/chat-session-9kght6]
+  workflow_dispatch:
+
+# One deploy at a time; a queued push should replace a pending one rather than
+# race it to the same Worker.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Cheap checks first: a broken build should fail before it reaches
+      # Cloudflare, not after.
+      - run: npx tsc --noEmit
+      - run: npm run lint
+
+      - name: Build and deploy
+        run: npm run cf:deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Next.js inlines NEXT_PUBLIC_* at build time, so these have to be
+          # present here and not only in wrangler.jsonc. Both are publishable —
+          # row level security is what protects the data.
+          NEXT_PUBLIC_SUPABASE_URL: https://gezrztmxyxbtbbasvbix.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6
