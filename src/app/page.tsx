@@ -1,69 +1,89 @@
-import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
-/**
- * Placeholder landing page. It doubles as a smoke test: reaching Supabase at
- * all proves the URL, key, cookie plumbing and proxy are wired correctly.
- */
-async function checkSupabase() {
-  try {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.getUser()
-    // "no session" is the expected answer for a signed-out visitor, and still
-    // means the round trip succeeded.
-    if (error && error.name !== 'AuthSessionMissingError') {
-      return { ok: false, detail: error.message }
-    }
-    return { ok: true, detail: 'Connected' }
-  } catch (error) {
-    return {
-      ok: false,
-      detail: error instanceof Error ? error.message : 'Unknown error',
-    }
-  }
-}
+import { Logo } from '@/components/logo'
+import { getViewer, homePathFor } from '@/lib/auth/session'
+
+const STEPS = [
+  {
+    title: 'Log the day as it happens',
+    detail:
+      'Morning weight and mood, every meal with portion and preparation, water, activity, stress, supplements, and how you actually felt.',
+  },
+  {
+    title: 'Your nutritionist reads it',
+    detail:
+      'Not a calorie count — a specialist looking at your real days and writing recommendations against them.',
+  },
+  {
+    title: 'Talk it through, day by day',
+    detail:
+      'Questions and answers attached to the day they are about, so nothing gets lost in one long thread.',
+  },
+]
 
 export default async function Home() {
-  const supabaseStatus = await checkSupabase()
+  const viewer = await getViewer()
+  if (viewer) redirect(homePathFor(viewer.profile.role))
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-10 px-6 py-20">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-5xl font-semibold tracking-tight">nutri</h1>
-        <p className="text-lg text-black/60 dark:text-white/60">
-          Nutrition, tracked simply.
-        </p>
-      </div>
+    <div className="flex flex-1 flex-col">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-5">
+        <Logo />
+        <Link
+          href="/login"
+          className="text-sm font-semibold text-slate-700 underline-offset-4 hover:underline dark:text-slate-200"
+        >
+          Sign in
+        </Link>
+      </header>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5 dark:border-white/15">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-black/50 dark:text-white/50">
-          Setup
-        </h2>
-        <ul className="flex flex-col gap-2 text-sm">
-          <StatusRow ok label="Next.js 16, TypeScript and Tailwind CSS v4" />
-          <StatusRow
-            ok={supabaseStatus.ok}
-            label={`Supabase — ${supabaseStatus.detail}`}
-          />
-        </ul>
-      </div>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-14 px-5 py-12">
+        <section className="flex max-w-2xl flex-col gap-5">
+          <span className="w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+            Nutrition diary &amp; wellbeing coaching
+          </span>
 
-      <p className="text-sm text-black/50 dark:text-white/50">
-        The foundation is in place and waiting on a product. Features land here
-        next.
-      </p>
-    </main>
-  )
-}
+          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            The diary your nutritionist actually reads.
+          </h1>
 
-function StatusRow({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <li className="flex items-center gap-3">
-      <span
-        aria-hidden
-        className={`size-2 shrink-0 rounded-full ${ok ? 'bg-emerald-500' : 'bg-red-500'}`}
-      />
-      <span>{label}</span>
-      <span className="sr-only">{ok ? '(ready)' : '(not ready)'}</span>
-    </li>
+          <p className="text-lg text-pretty text-slate-600 dark:text-slate-300">
+            Keep an honest record of how you eat, sleep, move and feel. Your
+            specialist sees the whole picture and coaches you against it.
+          </p>
+
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-[15px] font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            >
+              Start your diary
+            </Link>
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-xl border border-black/10 px-5 py-3 text-[15px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"
+            >
+              I&apos;m a nutritionist
+            </Link>
+          </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          {STEPS.map((step, index) => (
+            <div
+              key={step.title}
+              className="flex flex-col gap-2 rounded-2xl border border-black/10 p-5 dark:border-white/10"
+            >
+              <span className="grid size-7 place-items-center rounded-lg bg-emerald-600/10 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                {index + 1}
+              </span>
+              <h2 className="font-semibold">{step.title}</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{step.detail}</p>
+            </div>
+          ))}
+        </section>
+      </main>
+    </div>
   )
 }
