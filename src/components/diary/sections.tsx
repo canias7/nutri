@@ -1,6 +1,7 @@
 'use client'
 
 import { Field, Input, Textarea } from '@/components/form-fields'
+import { MeasureInput } from '@/components/units/measure-input'
 import { AutosaveSection } from '@/components/diary/autosave-section'
 import {
   saveComplaints,
@@ -32,15 +33,13 @@ export function MorningSection({ date, log }: SectionProps) {
           <Input id="wakeTime" name="wakeTime" type="time" defaultValue={toTimeInput(log?.wake_time)} />
         </Field>
 
-        <Field label="Morning weight (kg)" htmlFor="weightKg">
-          <Input
+        <Field label="Morning weight" htmlFor="weightKg">
+          <MeasureInput
             id="weightKg"
             name="weightKg"
-            type="number"
-            inputMode="decimal"
-            step="0.1"
+            measure="weight"
+            storedValue={log?.weight_kg ?? null}
             placeholder="70.5"
-            defaultValue={log?.weight_kg ?? ''}
           />
         </Field>
 

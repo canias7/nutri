@@ -587,6 +587,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_my_account: { Args: never; Returns: undefined }
       link_nutritionist: {
         Args: { code: string }
         Returns: {

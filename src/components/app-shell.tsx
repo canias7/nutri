@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { InstallPrompt } from '@/components/install-prompt'
 import { Logo } from '@/components/logo'
 import { NavTabs, type NavItem } from '@/components/nav-tabs'
 import { signOut } from '@/lib/auth/actions'
@@ -40,7 +41,10 @@ export function AppShell({
         <NavTabs items={nav} />
       </header>
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-6 pb-24">{children}</main>
+      <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-6 pb-24">
+        <InstallPrompt />
+        {children}
+      </main>
     </div>
   )
 }

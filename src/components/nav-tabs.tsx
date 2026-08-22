@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export type NavItem = { href: string; label: string }
+export type NavItem = { href: string; label: string; badge?: number }
 
 export function NavTabs({ items }: { items: NavItem[] }) {
   const pathname = usePathname()
@@ -28,6 +28,14 @@ export function NavTabs({ items }: { items: NavItem[] }) {
                 }`}
               >
                 {item.label}
+                {item.badge ? (
+                  <span
+                    className="ml-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white tabular-nums"
+                    aria-label={`${item.badge} unread`}
+                  >
+                    {item.badge}
+                  </span>
+                ) : null}
               </Link>
             </li>
           )

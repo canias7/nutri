@@ -3,10 +3,12 @@
 import { useActionState, useRef, useState } from 'react'
 
 import { BodyMap } from '@/components/measurements/body-map'
-import { SITES, siteColumn } from '@/lib/client/measurement-sites'
 import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
+import { MeasureInput } from '@/components/units/measure-input'
+import { UnitToggle } from '@/components/units/unit-provider'
 import { saveMeasurements } from '@/lib/client/measurements'
+import { SITES, siteColumn } from '@/lib/client/measurement-sites'
 import { idleFormState } from '@/lib/forms'
 import type { Tables } from '@/lib/supabase/database.types'
 
@@ -30,11 +32,11 @@ export function MeasurementsForm({
     input?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }
 
-  // Last time's numbers are the sensible starting point — most of them barely
-  // move, and retyping nine unchanged values is how people stop bothering.
-  const previous = (name: string) => {
-    const value = latest?.[name as keyof Measurement]
-    return value === null || value === undefined ? '' : String(value)
+  // Last time's numbers are the sensible starting point — most barely move, and
+  // retyping nine unchanged values is how people stop bothering.
+  const previous = (column: string): number | null => {
+    const value = latest?.[column as keyof Measurement]
+    return typeof value === 'number' ? value : value === null || value === undefined ? null : Number(value)
   }
 
   return (
@@ -44,6 +46,13 @@ export function MeasurementsForm({
           Tap a point to jump to that measurement.
         </p>
         <BodyMap active={active} onSelect={focusSite} />
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm text-slate-600 dark:text-slate-400">
+          Enter measurements in
+        </span>
+        <UnitToggle />
       </div>
 
       <form ref={formRef} action={action} className="flex flex-col gap-5">
@@ -68,37 +77,31 @@ export function MeasurementsForm({
               name="measuredOn"
               type="date"
               defaultValue={today}
+              max={today}
               invalid={Boolean(state.fieldErrors?.measuredOn)}
               required
             />
           </Field>
 
-          <Field label="Weight (kg)" htmlFor="weightKg">
-            <Input
+          <Field label="Weight" htmlFor="weightKg">
+            <MeasureInput
               id="weightKg"
               name="weightKg"
-              type="number"
-              inputMode="decimal"
-              step="0.1"
+              measure="weight"
+              storedValue={previous('weight_kg')}
               placeholder="70.5"
-              defaultValue={previous('weight_kg')}
             />
           </Field>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {SITES.map((site) => (
-            <Field key={site.name} label={`${site.label} (cm)`} htmlFor={site.name}>
-              <Input
+            <Field key={site.name} label={site.label} htmlFor={site.name}>
+              <MeasureInput
                 id={site.name}
                 name={site.name}
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                placeholder="—"
-                defaultValue={previous(siteColumn(site.name))}
-                onFocus={() => setActive(site.name)}
-                onBlur={() => setActive(null)}
+                measure="length"
+                storedValue={previous(siteColumn(site.name))}
               />
             </Field>
           ))}

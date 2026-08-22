@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from 'react'
 
 import { FormMessage, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
-import { sendMessage } from '@/lib/client/messages'
+import { markThreadRead, sendMessage } from '@/lib/client/messages'
 import { idleFormState } from '@/lib/forms'
 
 export type Message = {
@@ -17,9 +17,11 @@ export type Message = {
 export function MessageThread({
   messages,
   coachName,
+  hasUnread,
 }: {
   messages: Message[]
   coachName: string
+  hasUnread: boolean
 }) {
   const [state, action] = useActionState(sendMessage, idleFormState)
   const formRef = useRef<HTMLFormElement>(null)
@@ -35,6 +37,11 @@ export function MessageThread({
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' })
   }, [messages.length])
+
+  // Opening the thread is what counts as reading it.
+  useEffect(() => {
+    if (hasUnread) void markThreadRead()
+  }, [hasUnread])
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,6 +66,9 @@ export function MessageThread({
               >
                 {message.body}
                 <span
+                  // Local time, which the server cannot know; the first client
+                  // render corrects it.
+                  suppressHydrationWarning
                   className={`mt-1 block text-[11px] ${
                     message.mine ? 'text-emerald-50/80' : 'text-slate-400 dark:text-slate-500'
                   }`}

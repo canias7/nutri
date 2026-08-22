@@ -27,24 +27,38 @@ export function todayForOffset(offsetMinutes: number | null): string {
   return toDateParam(new Date(Date.now() - safe * 60_000))
 }
 
-/** "Wednesday, 20 August" — for headings where the year is obvious. */
-export function formatLongDate(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'UTC',
-  })
+// Spelled out rather than formatted through Intl. Workerd and the browser ship
+// different ICU builds, so the same `en-GB` request comes back as "Sat, 22 Aug"
+// on one and "Sat 22 Aug" on the other — which React reports as a hydration
+// mismatch and which throws away the client render of everything below it.
+const WEEKDAYS = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+] as const
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+] as const
+
+function parts(date: string) {
+  const value = new Date(`${date}T00:00:00Z`)
+  return {
+    weekday: WEEKDAYS[value.getUTCDay()],
+    day: value.getUTCDate(),
+    month: MONTHS[value.getUTCMonth()],
+  }
 }
 
-/** "Wed 20 Aug" — for lists. */
+/** "Saturday 22 August" — for headings where the year is obvious. */
+export function formatLongDate(date: string): string {
+  const { weekday, day, month } = parts(date)
+  return `${weekday} ${day} ${month}`
+}
+
+/** "Sat 22 Aug" — for lists. */
 export function formatShortDate(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  })
+  const { weekday, day, month } = parts(date)
+  return `${weekday.slice(0, 3)} ${day} ${month.slice(0, 3)}`
 }
 
 export function addDays(date: string, days: number): string {

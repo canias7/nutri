@@ -10,6 +10,9 @@ import {
   MealSection,
   MorningSection,
 } from '@/components/diary/sections'
+import { DateJump } from '@/components/diary/date-jump'
+import { DayDiscussion } from '@/components/diary/day-discussion'
+import { DayPoster } from '@/components/diary/day-poster'
 import { StoolSection } from '@/components/diary/stool-section'
 import { SupplementsChecklist } from '@/components/diary/supplements-checklist'
 import { WaterSection } from '@/components/diary/water-section'
@@ -22,11 +25,13 @@ import {
  import { resolveToday } from '@/lib/diary/today'
 import {
   completedSections,
+  getDayComments,
   getDiaryDay,
   MEAL_SLOTS,
   SECTION_LABELS,
   type SectionKey,
 } from '@/lib/diary/queries'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Diary · nutri' }
 
@@ -39,6 +44,12 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
     getDiaryDay(viewer.id, date),
     resolveToday(),
   ])
+
+  const [comments, coachName] = await Promise.all([
+    day.log ? getDayComments(day.log.id, viewer.id) : Promise.resolve([]),
+    getCoachName(client.nutritionist_id),
+  ])
+  const hasUnread = comments.some((comment) => !comment.mine)
 
   const done = completedSections(day)
   const mealsBySlot = new Map(day.meals.map((meal) => [meal.slot, meal]))
@@ -88,6 +99,10 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
           </p>
         ) : null}
 
+        <div className="flex justify-center">
+          <DateJump date={date} today={today} />
+        </div>
+
         <Progress done={done} />
       </header>
 
@@ -125,6 +140,32 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
       <EveningSection date={date} log={day.log} />
 
       <ComplaintsSection date={date} log={day.log} />
+
+      <DayPoster
+        data={{
+          dateLabel: formatLongDate(date),
+          name: viewer.profile.full_name,
+          weightKg: day.log?.weight_kg ? Number(day.log.weight_kg) : null,
+          waterMl: day.log?.water_total_ml ?? 0,
+          waterTargetMl: client.water_target_ml,
+          energy: day.log?.energy_level ?? null,
+          stress: day.log?.stress_level ?? null,
+          sectionsDone: done.size,
+          sectionsTotal: Object.keys(SECTION_LABELS).length,
+          meals: MEAL_SLOTS.map((meal) => ({
+            label: meal.label,
+            eaten: mealsBySlot.get(meal.slot)?.eaten ?? '',
+          })),
+        }}
+      />
+
+      <DayDiscussion
+        date={date}
+        dailyLogId={day.log?.id ?? null}
+        comments={comments}
+        coachName={coachName}
+        hasUnread={hasUnread}
+      />
 
       <p className="pb-2 text-center text-sm text-slate-500 dark:text-slate-400">
         Everything saves as you type. Come back through the day.
@@ -168,4 +209,15 @@ function Progress({ done }: { done: Set<SectionKey> }) {
       </ul>
     </div>
   )
+}
+
+async function getCoachName(nutritionistId: string | null): Promise<string | null> {
+  if (!nutritionistId) return null
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', nutritionistId)
+    .maybeSingle()
+  return data?.full_name || null
 }

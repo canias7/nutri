@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 
 import { CoachLinkForm, ProfileForm } from '@/components/profile/profile-form'
+import { DeleteAccount } from '@/components/profile/delete-account'
+import { UnitToggle } from '@/components/units/unit-provider'
 import { requireClient } from '@/lib/auth/session'
 import { signOut } from '@/lib/auth/actions'
 import { createClient } from '@/lib/supabase/server'
@@ -42,6 +44,11 @@ export default async function ProfilePage() {
             Signed in as {viewer.email}
           </p>
         </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-slate-600 dark:text-slate-400">Units</span>
+          <UnitToggle />
+        </div>
         <form action={signOut}>
           <button
             type="submit"
@@ -51,6 +58,8 @@ export default async function ProfilePage() {
           </button>
         </form>
       </section>
+
+      <DeleteAccount fullName={viewer.profile.full_name} />
     </div>
   )
 }

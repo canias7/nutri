@@ -5,6 +5,7 @@ import { useActionState, useRef, useTransition } from 'react'
 import { Field, FormMessage, Input } from '@/components/form-fields'
 import { addDrink, removeDrink } from '@/lib/diary/actions'
 import { idleSaveState } from '@/lib/diary/save-state'
+import { formatNumber } from '@/lib/format'
 import type { LogDrink } from '@/lib/diary/queries'
 
 const QUICK_VOLUMES = [200, 250, 330, 500]
@@ -47,9 +48,9 @@ export function WaterSection({
       <div className="mb-5 flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-2xl font-semibold tabular-nums">
-            {totalMl.toLocaleString()}{' '}
+            {formatNumber(totalMl)}{' '}
             <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              / {targetMl.toLocaleString()} ml
+              / {formatNumber(targetMl)} ml
             </span>
           </span>
           {metGoal ? (
@@ -58,7 +59,7 @@ export function WaterSection({
             </span>
           ) : (
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {(targetMl - totalMl).toLocaleString()} ml to go
+              {(formatNumber(targetMl - totalMl))} ml to go
             </span>
           )}
         </div>

@@ -46,7 +46,7 @@ export default async function MessagesPage() {
       .maybeSingle(),
     supabase
       .from('direct_messages')
-      .select('id, body, created_at, author_id')
+      .select('id, body, created_at, author_id, read_at')
       .eq('client_id', viewer.id)
       .order('created_at'),
   ])
@@ -58,6 +58,9 @@ export default async function MessagesPage() {
     created_at: row.created_at,
     mine: row.author_id === viewer.id,
   }))
+  const hasUnread = (rows ?? []).some(
+    (row) => row.author_id !== viewer.id && row.read_at === null,
+  )
 
   return (
     <div className="flex max-w-xl flex-col gap-5">
@@ -68,7 +71,7 @@ export default async function MessagesPage() {
         </p>
       </header>
 
-      <MessageThread messages={messages} coachName={coachName} />
+      <MessageThread messages={messages} coachName={coachName} hasUnread={hasUnread} />
     </div>
   )
 }

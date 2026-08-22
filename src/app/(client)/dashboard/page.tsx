@@ -1,14 +1,17 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { StressEnergy } from '@/components/dashboard/stress-energy'
 import { WeightTrend } from '@/components/dashboard/weight-trend'
 import { requireClient } from '@/lib/auth/session'
 import { formatShortDate, streakFrom } from '@/lib/diary/date'
+import { formatNumber } from '@/lib/format'
 import { resolveToday } from '@/lib/diary/today'
 import {
   completedSections,
   getDiaryDay,
   getRecentLogs,
+  getUnreadDays,
   SECTION_LABELS,
 } from '@/lib/diary/queries'
 
@@ -18,9 +21,10 @@ export default async function DashboardPage() {
   const { viewer, client } = await requireClient()
   const today = await resolveToday()
 
-  const [day, recent] = await Promise.all([
+  const [day, recent, unreadDays] = await Promise.all([
     getDiaryDay(viewer.id, today),
     getRecentLogs(viewer.id, 14),
+    getUnreadDays(viewer.id),
   ])
 
   const firstName = viewer.profile.full_name.split(' ')[0] || 'there'
@@ -37,6 +41,25 @@ export default async function DashboardPage() {
     .map((log) => ({ date: log.log_date, kg: Number(log.weight_kg) }))
     .reverse()
 
+  // Days where both were recorded; one without the other says nothing.
+  const stressEnergy = recent
+    .filter((log) => log.stress_level !== null && log.energy_level !== null)
+    .map((log) => ({
+      date: log.log_date,
+      stress: Number(log.stress_level),
+      energy: Number(log.energy_level),
+    }))
+    .reverse()
+
+  const wateredDays = recent.filter((log) => log.water_total_ml > 0)
+  const weeklyWaterAverage =
+    wateredDays.length > 0
+      ? Math.round(
+          wateredDays.reduce((sum, log) => sum + log.water_total_ml, 0) /
+            wateredDays.length,
+        )
+      : null
+
   const latestWeight = weights.at(-1)
   const startWeight = client.start_weight_kg ? Number(client.start_weight_kg) : null
   const change =
@@ -50,6 +73,32 @@ export default async function DashboardPage() {
           {client.goal || 'No program goal set yet.'}
         </p>
       </header>
+
+      {unreadDays.length > 0 ? (
+        <section className="flex flex-col gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-50 p-4 dark:bg-emerald-950/30">
+          <h2 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+            New replies from your nutritionist
+          </h2>
+          <p className="text-sm text-emerald-900/80 dark:text-emerald-200/80">
+            They commented on these days. Tap one to open the discussion.
+          </p>
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {unreadDays.map((unread) => (
+              <li key={unread.date}>
+                <Link
+                  href={`/diary/${unread.date}`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-emerald-800 shadow-xs transition hover:bg-emerald-100 dark:bg-white/10 dark:text-emerald-200"
+                >
+                  {unread.date === today ? 'Today' : formatShortDate(unread.date)}
+                  <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white tabular-nums">
+                    {unread.count}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <Link
         href="/diary"
@@ -82,9 +131,9 @@ export default async function DashboardPage() {
       <section className="grid gap-3 sm:grid-cols-3">
         <Stat
           label="Water today"
-          value={waterToday.toLocaleString()}
+          value={formatNumber(waterToday)}
           unit="ml"
-          hint={`${waterPct}% of ${client.water_target_ml.toLocaleString()} ml`}
+          hint={`${waterPct}% of ${formatNumber(client.water_target_ml)} ml`}
           progress={waterPct}
         />
         <Stat
@@ -105,6 +154,17 @@ export default async function DashboardPage() {
         />
       </section>
 
+      {weeklyWaterAverage !== null ? (
+        <p className="-mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Averaging{' '}
+          <span className="font-semibold text-slate-700 tabular-nums dark:text-slate-200">
+            {formatNumber(weeklyWaterAverage)} ml
+          </span>{' '}
+          of water across the {wateredDays.length} day
+          {wateredDays.length === 1 ? '' : 's'} you have logged.
+        </p>
+      ) : null}
+
       {weights.length >= 2 ? (
         <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
           <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -123,6 +183,15 @@ export default async function DashboardPage() {
           </p>
         </section>
       )}
+
+      {stressEnergy.length >= 3 ? (
+        <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Stress against energy
+          </h2>
+          <StressEnergy points={stressEnergy} />
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -159,7 +228,7 @@ export default async function DashboardPage() {
                   </span>
                   <span className="flex gap-3 tabular-nums text-slate-500 dark:text-slate-400">
                     {log.weight_kg ? <span>{Number(log.weight_kg).toFixed(1)} kg</span> : null}
-                    <span>{log.water_total_ml.toLocaleString()} ml</span>
+                    <span>{formatNumber(log.water_total_ml)} ml</span>
                   </span>
                 </Link>
               </li>

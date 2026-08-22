@@ -100,6 +100,77 @@ export async function getDiaryDay(
   }
 }
 
+export type DayComment = {
+  id: string
+  body: string
+  created_at: string
+  mine: boolean
+}
+
+/** The discussion attached to one diary day, oldest first. */
+export async function getDayComments(
+  dailyLogId: string,
+  viewerId: string,
+): Promise<DayComment[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('day_comments')
+    .select('id, body, created_at, author_id')
+    .eq('daily_log_id', dailyLogId)
+    .order('created_at')
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    body: row.body,
+    created_at: row.created_at,
+    mine: row.author_id === viewerId,
+  }))
+}
+
+export type UnreadDay = { date: string; dailyLogId: string; count: number }
+
+/**
+ * Days where the nutritionist has said something the client has not seen.
+ *
+ * Read through daily_logs so each unread comment carries the date it belongs
+ * to — a count on its own would tell someone they have replies without telling
+ * them where to look.
+ */
+export async function getUnreadDays(clientId: string): Promise<UnreadDay[]> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('day_comments')
+    .select('id, daily_log_id, author_id, read_at, daily_logs!inner(log_date, client_id)')
+    .is('read_at', null)
+    .neq('author_id', clientId)
+    .eq('daily_logs.client_id', clientId)
+
+  const byDate = new Map<string, UnreadDay>()
+  for (const row of data ?? []) {
+    const date = row.daily_logs?.log_date
+    if (!date) continue
+    const existing = byDate.get(date)
+    if (existing) existing.count += 1
+    else byDate.set(date, { date, dailyLogId: row.daily_log_id, count: 1 })
+  }
+
+  return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date))
+}
+
+/** Unread messages in the general thread, for the nav badge. */
+export async function getUnreadMessageCount(clientId: string): Promise<number> {
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from('direct_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId)
+    .neq('author_id', clientId)
+    .is('read_at', null)
+
+  return count ?? 0
+}
+
 /** The last `days` days of logs, most recent first. */
 export async function getRecentLogs(
   clientId: string,
