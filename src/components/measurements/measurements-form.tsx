@@ -6,8 +6,6 @@ import { BodyMap } from '@/components/measurements/body-map'
 import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
 import { LengthInput } from '@/components/units/length-input'
-import { WeightInput } from '@/components/units/weight-input'
-import { UnitToggle } from '@/components/units/unit-provider'
 import { saveMeasurements } from '@/lib/client/measurements'
 import { SITES, siteColumn } from '@/lib/client/measurement-sites'
 import { idleFormState } from '@/lib/forms'
@@ -49,13 +47,6 @@ export function MeasurementsForm({
         <BodyMap active={active} onSelect={focusSite} />
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          Enter measurements in
-        </span>
-        <UnitToggle />
-      </div>
-
       <form ref={formRef} action={action} className="flex flex-col gap-5">
         {state.status === 'error' ? <FormMessage>{state.message}</FormMessage> : null}
         {state.status === 'idle' && state.message ? (
@@ -67,32 +58,24 @@ export function MeasurementsForm({
           </p>
         ) : null}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Date measured"
-            htmlFor="measuredOn"
-            errors={state.fieldErrors?.measuredOn}
-          >
-            <Input
-              id="measuredOn"
-              name="measuredOn"
-              type="date"
-              defaultValue={today}
-              max={today}
-              invalid={Boolean(state.fieldErrors?.measuredOn)}
-              required
-            />
-          </Field>
-
-          <Field label="Weight" htmlFor="weightKg">
-            <WeightInput
-              id="weightKg"
-              name="weightKg"
-              storedValue={previous('weight_kg')}
-              placeholder="70.5"
-            />
-          </Field>
-        </div>
+        {/* No weight here: the diary asks for it every morning, and the
+            starting weight sits further up this same page. */}
+        <Field
+          label="Date measured"
+          htmlFor="measuredOn"
+          errors={state.fieldErrors?.measuredOn}
+        >
+          <Input
+            id="measuredOn"
+            name="measuredOn"
+            type="date"
+            defaultValue={today}
+            max={today}
+            invalid={Boolean(state.fieldErrors?.measuredOn)}
+            required
+            className="sm:w-52"
+          />
+        </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {SITES.map((site) => (

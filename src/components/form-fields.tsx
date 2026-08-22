@@ -12,12 +12,16 @@ export function Field({
   htmlFor,
   hint,
   errors,
+  required,
   children,
 }: {
   label: string
   htmlFor: string
   hint?: ReactNode
   errors?: string[]
+  /** Marks the answer as one the diary expects. Nothing is ever blocked — a
+      half-filled day still saves — but the reader can see what is missing. */
+  required?: boolean
   children: ReactNode
 }) {
   const errorId = `${htmlFor}-error`
@@ -29,6 +33,12 @@ export function Field({
         className="text-sm font-medium text-slate-700 dark:text-slate-200"
       >
         {label}
+        {required ? (
+          <>
+            <span aria-hidden className="ml-0.5 text-red-500">*</span>
+            <span className="sr-only"> (required)</span>
+          </>
+        ) : null}
       </label>
       {children}
       {hint && !errors?.length ? (

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from 'react'
 
+import { OptionalTag } from '@/components/diary/autosave-section'
 import { FormMessage, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
 import { markDayCommentsRead, postDayComment } from '@/lib/diary/comments'
@@ -36,11 +37,12 @@ export function DayDiscussion({
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
       <header className="mb-4 flex flex-col gap-0.5">
-        <h2 className="font-semibold">Discussion</h2>
+        <h2 className="flex items-center gap-2 font-semibold">
+          Discussion
+          <OptionalTag />
+        </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          {coachName
-            ? `Questions and answers about this day, kept with the day itself.`
-            : 'Notes about this day. Link a nutritionist and they can reply here.'}
+          Questions and answers about this day, kept with the day itself.
         </p>
       </header>
 

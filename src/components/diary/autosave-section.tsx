@@ -44,6 +44,8 @@ export function AutosaveSection({
   action,
   children,
   hideSavedBadge,
+  optional,
+  incomplete,
   ref,
 }: {
   title: string
@@ -51,6 +53,13 @@ export function AutosaveSection({
   date: string
   action: (state: SaveState, formData: FormData) => Promise<SaveState>
   children: ReactNode
+  /** Says outright that the section can be left blank. */
+  optional?: boolean
+  /**
+   * Something the diary expects is still missing. Shown instead of "Saved",
+   * because a section that saved and is still unanswered is not finished.
+   */
+  incomplete?: boolean
   /**
    * Drops the "Saved" badge once a save lands. Failures and work in progress
    * still show — it is the badge that sits there afterwards that is noise.
@@ -127,7 +136,10 @@ export function AutosaveSection({
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <h2 className="font-semibold">{title}</h2>
+          <h2 className="flex items-center gap-2 font-semibold">
+            {title}
+            {optional ? <OptionalTag /> : null}
+          </h2>
           {description ? (
             <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
           ) : null}
@@ -137,6 +149,7 @@ export function AutosaveSection({
           dirty={dirty}
           state={state}
           hideSaved={hideSavedBadge}
+          incomplete={incomplete}
         />
       </header>
 
@@ -160,16 +173,37 @@ export function AutosaveSection({
   )
 }
 
+export function OptionalTag() {
+  return (
+    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-white/10 dark:text-slate-400">
+      Optional
+    </span>
+  )
+}
+
+export function IncompleteTag() {
+  return (
+    <span
+      role="status"
+      className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+    >
+      Needs an answer
+    </span>
+  )
+}
+
 function SaveStatus({
   pending,
   dirty,
   state,
   hideSaved,
+  incomplete,
 }: {
   pending: boolean
   dirty: boolean
   state: SaveState
   hideSaved?: boolean
+  incomplete?: boolean
 }) {
   if (state.status === 'error') {
     return (
@@ -181,6 +215,8 @@ function SaveStatus({
 
   if (pending) return <Badge tone="muted">Saving…</Badge>
   if (dirty) return <Badge tone="muted">Unsaved</Badge>
+  // Ranked above "Saved": the write landed, the answer is still missing.
+  if (incomplete) return <IncompleteTag />
   if (state.status === 'saved' && !hideSaved) return <Badge tone="good">Saved</Badge>
   return null
 }

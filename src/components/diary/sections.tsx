@@ -20,19 +20,23 @@ function toTimeInput(value: string | null | undefined): string {
 }
 
 export function MorningSection({ date, log }: SectionProps) {
+  const incomplete =
+    !log?.wake_time || log.weight_kg === null || log.energy_level === null
+
   return (
     <AutosaveSection
       title="Morning"
       description="Weigh yourself before breakfast, on an empty stomach."
       date={date}
       action={saveMorning}
+      incomplete={incomplete}
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Wake-up time" htmlFor="wakeTime">
+        <Field label="Wake-up time" htmlFor="wakeTime" required>
           <Input id="wakeTime" name="wakeTime" type="time" defaultValue={toTimeInput(log?.wake_time)} />
         </Field>
 
-        <Field label="Morning weight" htmlFor="weightKg">
+        <Field label="Morning weight" htmlFor="weightKg" required>
           <WeightInput
             id="weightKg"
             name="weightKg"
@@ -50,7 +54,7 @@ export function MorningSection({ date, log }: SectionProps) {
           />
         </Field>
 
-        <Field label="Energy level (1–10)" htmlFor="energyLevel">
+        <Field label="Energy level (1–10)" htmlFor="energyLevel" required>
           <Input
             id="energyLevel"
             name="energyLevel"
@@ -96,6 +100,7 @@ export function DaytimeSection({ date, log }: SectionProps) {
       description="Movement, time outdoors, and how the day felt."
       date={date}
       action={saveDaytime}
+      optional
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Activity" htmlFor="activityType">
@@ -164,6 +169,7 @@ export function ExtraSupplementsSection({ date, log }: SectionProps) {
       description="One-offs that are not on your regular list."
       date={date}
       action={saveExtraSupplements}
+      optional
     >
       <Field label="Other supplements" htmlFor="extraSupplements">
         <Input
@@ -184,6 +190,7 @@ export function EveningSection({ date, log }: SectionProps) {
       description="How the day wound down."
       date={date}
       action={saveEvening}
+      incomplete={!log?.bed_time}
     >
       <Field label="Evening routine" htmlFor="eveningRitual">
         <Input
@@ -204,7 +211,7 @@ export function EveningSection({ date, log }: SectionProps) {
           />
         </Field>
 
-        <Field label="Asleep at" htmlFor="bedTime">
+        <Field label="Asleep at" htmlFor="bedTime" required>
           <Input
             id="bedTime"
             name="bedTime"
@@ -224,6 +231,7 @@ export function ComplaintsSection({ date, log }: SectionProps) {
       description="Symptoms and changes, however small. This is what your nutritionist reads most closely."
       date={date}
       action={saveComplaints}
+      optional
     >
       <Field label="Digestion & gut" htmlFor="complaintDigestion">
         <Textarea

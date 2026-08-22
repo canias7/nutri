@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 
+import { MeasurementsPanel } from '@/components/measurements/measurements-panel'
 import { CoachLinkForm, ProfileForm } from '@/components/profile/profile-form'
 import { DeleteAccount } from '@/components/profile/delete-account'
 import { UnitToggle } from '@/components/units/unit-provider'
 import { requireClient } from '@/lib/auth/session'
+import { resolveToday } from '@/lib/diary/today'
 import { signOut } from '@/lib/auth/actions'
 import { createClient } from '@/lib/supabase/server'
 
@@ -11,17 +13,27 @@ export const metadata: Metadata = { title: 'Profile & goals · nutri' }
 
 export default async function ProfilePage() {
   const { viewer, client } = await requireClient()
+  const today = await resolveToday()
 
-  let coachName: string | null = null
-  if (client.nutritionist_id) {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', client.nutritionist_id)
-      .maybeSingle()
-    coachName = data?.full_name ?? null
-  }
+  const supabase = await createClient()
+
+  const [{ data: coach }, { data: measurements }] = await Promise.all([
+    client.nutritionist_id
+      ? supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', client.nutritionist_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from('body_measurements')
+      .select('*')
+      .eq('client_id', viewer.id)
+      .order('measured_on', { ascending: false })
+      .limit(12),
+  ])
+
+  const coachName = coach?.full_name ?? null
 
   return (
     <div className="flex max-w-xl flex-col gap-5">
@@ -36,6 +48,10 @@ export default async function ProfilePage() {
       <CoachLinkForm coachName={coachName} />
 
       <ProfileForm fullName={viewer.profile.full_name} client={client} />
+
+      <div id="measurements" className="scroll-mt-6">
+        <MeasurementsPanel today={today} history={measurements ?? []} />
+      </div>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-black/10 p-5 dark:border-white/10">
         <div className="flex flex-col gap-0.5">

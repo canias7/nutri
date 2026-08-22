@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import { isValidDateParam } from '@/lib/diary/date'
 
 /** Blank means "not measured this time", which is different from zero. */
-function optionalCm(formData: FormData, name: string): number | null {
+function optionalLength(formData: FormData, name: string): number | null {
   const raw = field(formData, name)
   if (raw === '') return null
   const value = Number(raw)
@@ -34,16 +34,15 @@ export async function saveMeasurements(
   const row = {
     client_id: viewer.id,
     measured_on: measuredOn,
-    weight_kg: optionalCm(formData, 'weightKg'),
-    chest_cm: optionalCm(formData, 'chestCm'),
-    waist_cm: optionalCm(formData, 'waistCm'),
-    hips_cm: optionalCm(formData, 'hipsCm'),
-    upper_arm_left_cm: optionalCm(formData, 'upperArmLeftCm'),
-    upper_arm_right_cm: optionalCm(formData, 'upperArmRightCm'),
-    thigh_left_cm: optionalCm(formData, 'thighLeftCm'),
-    thigh_right_cm: optionalCm(formData, 'thighRightCm'),
-    above_knee_left_cm: optionalCm(formData, 'aboveKneeLeftCm'),
-    above_knee_right_cm: optionalCm(formData, 'aboveKneeRightCm'),
+    chest_cm: optionalLength(formData, 'chestCm'),
+    waist_cm: optionalLength(formData, 'waistCm'),
+    hips_cm: optionalLength(formData, 'hipsCm'),
+    upper_arm_left_cm: optionalLength(formData, 'upperArmLeftCm'),
+    upper_arm_right_cm: optionalLength(formData, 'upperArmRightCm'),
+    thigh_left_cm: optionalLength(formData, 'thighLeftCm'),
+    thigh_right_cm: optionalLength(formData, 'thighRightCm'),
+    above_knee_left_cm: optionalLength(formData, 'aboveKneeLeftCm'),
+    above_knee_right_cm: optionalLength(formData, 'aboveKneeRightCm'),
     notes: field(formData, 'notes'),
   }
 
@@ -54,7 +53,7 @@ export async function saveMeasurements(
 
   if (error) return failed('Could not save your measurements. Try again.')
 
-  revalidatePath('/measurements')
+  revalidatePath('/profile')
   revalidatePath('/dashboard')
   return { status: 'idle', message: 'Measurements saved.' }
 }
@@ -63,5 +62,5 @@ export async function deleteMeasurement(id: string): Promise<void> {
   await requireClient()
   const supabase = await createClient()
   await supabase.from('body_measurements').delete().eq('id', id)
-  revalidatePath('/measurements')
+  revalidatePath('/profile')
 }

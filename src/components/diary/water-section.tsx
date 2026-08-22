@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useTransition } from 'react'
 
+import { IncompleteTag } from '@/components/diary/autosave-section'
 import { Field, FormMessage, Input } from '@/components/form-fields'
 import { addDrink, removeDrink } from '@/lib/diary/actions'
 import { idleSaveState } from '@/lib/diary/save-state'
@@ -28,11 +29,17 @@ export function WaterSection({
 
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <header className="mb-4 flex flex-col gap-0.5">
-        <h2 className="font-semibold">Water &amp; drinks</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Everything you drink counts toward your target.
-        </p>
+      <header className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-semibold">
+            Water &amp; drinks
+            <span aria-hidden className="ml-0.5 text-red-500">*</span>
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Everything you drink counts toward your target.
+          </p>
+        </div>
+        {drinks.length === 0 ? <IncompleteTag /> : null}
       </header>
 
       <div className="mb-5 flex flex-col gap-2">
@@ -47,11 +54,7 @@ export function WaterSection({
             <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
               Goal met
             </span>
-          ) : (
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {(formatNumber(targetMl - totalMl))} ml to go
-            </span>
-          )}
+          ) : null}
         </div>
 
         <div

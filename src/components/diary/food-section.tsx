@@ -43,6 +43,12 @@ function fromMeals(meals: LogMeal[]): Entry[] {
  * is one list now: an entry per thing eaten, added as the day goes.
  */
 export function FoodSection({ date, meals }: { date: string; meals: LogMeal[] }) {
+  // Read off what was saved rather than what is typed: the autosave lands within
+  // the second, and a marker that flickers on every keystroke is worse than one
+  // that catches up.
+  const incomplete =
+    meals.length === 0 || meals.some((meal) => !meal.eaten.trim() || !meal.eaten_at)
+
   const [entries, setEntries] = useState<Entry[]>(() => fromMeals(meals))
   const added = useRef(0)
   const section = useRef<AutosaveHandle>(null)
@@ -79,6 +85,7 @@ export function FoodSection({ date, meals }: { date: string; meals: LogMeal[] })
       title="Food"
       description="Everything you ate today, in the order you ate it."
       hideSavedBadge
+      incomplete={incomplete}
       date={date}
       action={saveFood}
     >
@@ -102,7 +109,7 @@ export function FoodSection({ date, meals }: { date: string; meals: LogMeal[] })
             </div>
           ) : null}
 
-          <Field label="What you ate" htmlFor={`eaten-${entry.key}`}>
+          <Field label="What you ate" htmlFor={`eaten-${entry.key}`} required>
             <Textarea
               id={`eaten-${entry.key}`}
               name="eaten"
@@ -130,7 +137,7 @@ export function FoodSection({ date, meals }: { date: string; meals: LogMeal[] })
               />
             </Field>
 
-            <Field label="Time" htmlFor={`time-${entry.key}`}>
+            <Field label="Time" htmlFor={`time-${entry.key}`} required>
               <Input
                 id={`time-${entry.key}`}
                 name="eatenAt"
