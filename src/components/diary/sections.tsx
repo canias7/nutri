@@ -1,0 +1,326 @@
+'use client'
+
+import { Field, Input, Textarea } from '@/components/form-fields'
+import { AutosaveSection } from '@/components/diary/autosave-section'
+import {
+  saveComplaints,
+  saveDaytime,
+  saveEvening,
+  saveExtraSupplements,
+  saveMeal,
+  saveMorning,
+} from '@/lib/diary/actions'
+import type { DailyLog, LogMeal } from '@/lib/diary/queries'
+
+type SectionProps = { date: string; log: DailyLog | null }
+
+/** Times come back from Postgres as HH:MM:SS; the input wants HH:MM. */
+function toTimeInput(value: string | null | undefined): string {
+  return value ? value.slice(0, 5) : ''
+}
+
+export function MorningSection({ date, log }: SectionProps) {
+  return (
+    <AutosaveSection
+      title="Morning"
+      description="Weigh yourself before breakfast, on an empty stomach."
+      date={date}
+      action={saveMorning}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Wake-up time" htmlFor="wakeTime">
+          <Input id="wakeTime" name="wakeTime" type="time" defaultValue={toTimeInput(log?.wake_time)} />
+        </Field>
+
+        <Field label="Morning weight (kg)" htmlFor="weightKg">
+          <Input
+            id="weightKg"
+            name="weightKg"
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            placeholder="70.5"
+            defaultValue={log?.weight_kg ?? ''}
+          />
+        </Field>
+
+        <Field label="How you woke up" htmlFor="wakingMood">
+          <Input
+            id="wakingMood"
+            name="wakingMood"
+            placeholder="Rested, groggy, anxious…"
+            defaultValue={log?.waking_mood ?? ''}
+          />
+        </Field>
+
+        <Field label="Energy level (1–10)" htmlFor="energyLevel">
+          <Input
+            id="energyLevel"
+            name="energyLevel"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={10}
+            placeholder="7"
+            defaultValue={log?.energy_level ?? ''}
+          />
+        </Field>
+      </div>
+
+      <Field label="Morning activity" htmlFor="morningActivity">
+        <Input
+          id="morningActivity"
+          name="morningActivity"
+          placeholder="Stretching, a walk, nothing yet…"
+          defaultValue={log?.morning_activity ?? ''}
+        />
+      </Field>
+
+      <Field
+        label="First warm drink"
+        htmlFor="firstWarmDrink"
+        hint="What you had before anything else."
+      >
+        <Input
+          id="firstWarmDrink"
+          name="firstWarmDrink"
+          placeholder="Warm water with lemon, herbal tea, chicory…"
+          defaultValue={log?.first_warm_drink ?? ''}
+        />
+      </Field>
+    </AutosaveSection>
+  )
+}
+
+export function MealSection({
+  date,
+  slot,
+  label,
+  defaultTime,
+  meal,
+}: {
+  date: string
+  slot: string
+  label: string
+  defaultTime: string
+  meal: LogMeal | undefined
+}) {
+  return (
+    <AutosaveSection title={label} date={date} action={saveMeal}>
+      <input type="hidden" name="slot" value={slot} />
+
+      <Field label="What you ate" htmlFor={`${slot}-eaten`}>
+        <Textarea
+          id={`${slot}-eaten`}
+          name="eaten"
+          placeholder="Omelette of 2 eggs, avocado, salad leaves, rye bread."
+          defaultValue={meal?.eaten ?? ''}
+        />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field label="Portion" htmlFor={`${slot}-amount`}>
+          <Input
+            id={`${slot}-amount`}
+            name="amount"
+            placeholder="≈250 g"
+            defaultValue={meal?.amount ?? ''}
+          />
+        </Field>
+
+        <Field label="Prepared how" htmlFor={`${slot}-method`}>
+          <Input
+            id={`${slot}-method`}
+            name="method"
+            placeholder="Steamed, stewed…"
+            defaultValue={meal?.method ?? ''}
+          />
+        </Field>
+
+        <Field label="Time" htmlFor={`${slot}-time`}>
+          <Input
+            id={`${slot}-time`}
+            name="eatenAt"
+            type="time"
+            defaultValue={toTimeInput(meal?.eaten_at) || defaultTime}
+          />
+        </Field>
+      </div>
+    </AutosaveSection>
+  )
+}
+
+export function DaytimeSection({ date, log }: SectionProps) {
+  return (
+    <AutosaveSection
+      title="Activity & stress"
+      description="Movement, time outdoors, and how the day felt."
+      date={date}
+      action={saveDaytime}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Activity" htmlFor="activityType">
+          <Input
+            id="activityType"
+            name="activityType"
+            placeholder="Running, pilates, steps…"
+            defaultValue={log?.activity_type ?? ''}
+          />
+        </Field>
+
+        <Field label="For how long (minutes)" htmlFor="activityMinutes">
+          <Input
+            id="activityMinutes"
+            name="activityMinutes"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="45"
+            defaultValue={log?.activity_minutes ?? ''}
+          />
+        </Field>
+
+        <Field label="Stress level (0–10)" htmlFor="stressLevel">
+          <Input
+            id="stressLevel"
+            name="stressLevel"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={10}
+            placeholder="4"
+            defaultValue={log?.stress_level ?? ''}
+          />
+        </Field>
+
+        <Field label="Time outdoors (minutes)" htmlFor="outdoorMinutes">
+          <Input
+            id="outdoorMinutes"
+            name="outdoorMinutes"
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="30"
+            defaultValue={log?.outdoor_minutes ?? ''}
+          />
+        </Field>
+      </div>
+
+      <Field label="What helped with the stress" htmlFor="stressRelief">
+        <Input
+          id="stressRelief"
+          name="stressRelief"
+          placeholder="Breathing, a book, meditation…"
+          defaultValue={log?.stress_relief ?? ''}
+        />
+      </Field>
+    </AutosaveSection>
+  )
+}
+
+export function ExtraSupplementsSection({ date, log }: SectionProps) {
+  return (
+    <AutosaveSection
+      title="Anything else you took"
+      description="One-offs that are not on your regular list."
+      date={date}
+      action={saveExtraSupplements}
+    >
+      <Field label="Other supplements" htmlFor="extraSupplements">
+        <Input
+          id="extraSupplements"
+          name="extraSupplements"
+          placeholder="Magnesium, vitamin D — comma separated"
+          defaultValue={log?.extra_supplements ?? ''}
+        />
+      </Field>
+    </AutosaveSection>
+  )
+}
+
+export function EveningSection({ date, log }: SectionProps) {
+  return (
+    <AutosaveSection
+      title="Evening"
+      description="How the day wound down."
+      date={date}
+      action={saveEvening}
+    >
+      <Field label="Evening routine" htmlFor="eveningRitual">
+        <Input
+          id="eveningRitual"
+          name="eveningRitual"
+          placeholder="Warm bath, reading, meditation…"
+          defaultValue={log?.evening_ritual ?? ''}
+        />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Screens off at" htmlFor="gadgetsOffAt">
+          <Input
+            id="gadgetsOffAt"
+            name="gadgetsOffAt"
+            type="time"
+            defaultValue={toTimeInput(log?.gadgets_off_at)}
+          />
+        </Field>
+
+        <Field label="Asleep at" htmlFor="bedTime">
+          <Input
+            id="bedTime"
+            name="bedTime"
+            type="time"
+            defaultValue={toTimeInput(log?.bed_time)}
+          />
+        </Field>
+      </div>
+    </AutosaveSection>
+  )
+}
+
+export function ComplaintsSection({ date, log }: SectionProps) {
+  return (
+    <AutosaveSection
+      title="How you felt"
+      description="Symptoms and changes, however small. This is what your nutritionist reads most closely."
+      date={date}
+      action={saveComplaints}
+    >
+      <Field label="Digestion & gut" htmlFor="complaintDigestion">
+        <Textarea
+          id="complaintDigestion"
+          name="complaintDigestion"
+          placeholder="Bloating, heartburn, heaviness, bowel movements normal…"
+          defaultValue={log?.complaint_digestion ?? ''}
+        />
+      </Field>
+
+      <Field label="Skin, hair & nails" htmlFor="complaintSkin">
+        <Textarea
+          id="complaintSkin"
+          name="complaintSkin"
+          placeholder="Dryness, breakouts, normal…"
+          defaultValue={log?.complaint_skin ?? ''}
+        />
+      </Field>
+
+      <Field label="Mood & emotions" htmlFor="complaintEmotional">
+        <Textarea
+          id="complaintEmotional"
+          name="complaintEmotional"
+          placeholder="Irritable, calm, flat…"
+          defaultValue={log?.complaint_emotional ?? ''}
+        />
+      </Field>
+
+      <Field label="Anything else" htmlFor="complaintOther">
+        <Textarea
+          id="complaintOther"
+          name="complaintOther"
+          placeholder="Headache, sugar cravings, fatigue…"
+          defaultValue={log?.complaint_other ?? ''}
+        />
+      </Field>
+    </AutosaveSection>
+  )
+}
