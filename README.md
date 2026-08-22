@@ -139,6 +139,51 @@ not publish them as API endpoints.
 coach, tries the obvious attacks, and rolls back. Run it after touching any
 policy, trigger, or grant.
 
+### Email
+
+Confirmation and password-reset emails are sent by Supabase Auth from its own
+servers, not by the Worker — so they are configured in the Supabase dashboard,
+and nothing in this repo sends them.
+
+Supabase's built-in mailer is for testing only: **two emails an hour, across the
+whole project.** The third sign-up in any hour comes back
+
+```
+{"code":429,"error_code":"over_email_send_rate_limit","msg":"email rate limit exceeded"}
+```
+
+and the account is not created at all. Custom SMTP is not a polish step; without
+it the third person to sign up simply cannot.
+
+Use [Cloudflare Email Sending](https://developers.cloudflare.com/email-service/)
+— the Worker already lives in that account, it speaks SMTP, and the Workers Paid
+plan includes 3,000 messages a month. In **Authentication → Emails → SMTP**:
+
+| Setting  | Value                                                  |
+| -------- | ------------------------------------------------------ |
+| Host     | `smtp.mx.cloudflare.net`                               |
+| Port     | `465` — implicit TLS; 587 and STARTTLS are not offered  |
+| Username | `api_token` — the literal string, not a token           |
+| Password | a Cloudflare API token with **Email Sending: Edit**     |
+| Sender   | an address on the onboarded domain                      |
+
+It needs a domain. Cloudflare onboards one under **Compute → Email Service →
+Email Sending → Onboard Domain**, which writes MX, SPF, DKIM and DMARC records
+to it; there is no sandbox sender to borrow in the meantime, and `workers.dev`
+cannot hold those records. Until then the only way to let people in is to turn
+**Confirm email** off under **Authentication → Sign In / Providers**, which the
+sign-up action already handles — Supabase returns a session instead of a
+verification link, and `signUp` redirects straight to the dashboard.
+
+Moving to a real domain is three changes, and missing any one of them leaves
+working emails pointing at the old host:
+
+1. `NEXT_PUBLIC_SITE_URL` in `.env.production` — every link in every auth email
+   is built from it.
+2. Supabase **Authentication → URL Configuration** — Site URL, and the redirect
+   allowlist that `/auth/confirm` has to match.
+3. The sender address in the SMTP settings above.
+
 ### A note on Proxy
 
 Next.js 16 renamed Middleware to Proxy, so the session refresh lives in
