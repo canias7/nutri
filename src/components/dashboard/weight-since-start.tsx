@@ -30,11 +30,8 @@ const PAD_R = 28
 const PAD_T = 16
 const PAD_B = 16
 
-/** The table lists a week of the plotted fortnight, matching the water table. */
-const TABLE_DAYS = 7
-
 /**
- * Every morning's weight as a distance from where the programme started.
+ * The week's mornings, each as a distance from where the programme started.
  *
  * Zero is the starting weight rather than zero kilograms, which is the question
  * people actually put to a scale — a line drifting between 70 and 71 says far
@@ -79,11 +76,6 @@ export function WeightSinceStart({
 
   const band = (VIEW_W - PAD_L - PAD_R) / Math.max(1, points.length)
   const barW = Math.max(3, Math.min(band - 5, 22))
-
-  // Paired before slicing so a point and its delta cannot come apart.
-  const recent = points
-    .map((point, index) => ({ point, delta: deltas[index] }))
-    .slice(-TABLE_DAYS)
 
   const shownDelta = active === null ? null : deltas[active]
   const shown =
@@ -172,7 +164,7 @@ export function WeightSinceStart({
             <g key={point.date}>
               {delta === null ? (
                 // A morning nobody weighed. Drawn as a bead on the rule rather
-                // than skipped, so the fortnight keeps its shape and the gaps
+                // than skipped, so the week keeps its shape and the gaps
                 // are part of the picture — and lighter than the rule it sits
                 // on, which is what tells the two apart.
                 <rect
@@ -221,13 +213,9 @@ export function WeightSinceStart({
         </text>
       </svg>
 
-      {/* The chart plots a fortnight; the table lists the last week of it, so it
-          stays the length of the water table beside it. Said out loud rather
-          than quietly cut — a table view that shows half the plotted days
-          without mentioning it is worse than one that is honestly shorter. */}
       <details className="text-sm">
         <summary className="cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
-          View last 7 days as table
+          View as table
         </summary>
         <div className="mt-2 overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -239,14 +227,16 @@ export function WeightSinceStart({
               </tr>
             </thead>
             <tbody>
-              {recent.map(({ point, delta }) => (
+              {points.map((point, index) => (
                 <tr key={point.date} className="border-t border-black/5 dark:border-white/10">
                   <td className="py-1.5 pr-4">{formatShortDate(point.date)}</td>
                   <td className="py-1.5 pr-4 tabular-nums">
                     {point.kg === null ? '—' : formatWeight(point.kg, system)}
                   </td>
                   <td className="py-1.5 tabular-nums">
-                    {delta === null ? 'Not weighed' : formatWeightChange(delta, system)}
+                    {deltas[index] === null
+                      ? 'Not weighed'
+                      : formatWeightChange(deltas[index], system)}
                   </td>
                 </tr>
               ))}

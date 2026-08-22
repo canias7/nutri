@@ -33,11 +33,12 @@ export default async function DashboardPage() {
     return { date, ml: logsByDate.get(date)?.water_total_ml ?? 0 }
   })
 
-  // A fixed fortnight counted back from today, the way the water week is. The
-  // chart is drawn whether or not anyone has stepped on a scale yet — an empty
-  // frame says "this is where your weight will go" and a paragraph does not.
-  const weights = Array.from({ length: 14 }, (_, index) => {
-    const date = addDays(today, index - 13)
+  // The same seven days as the water week, so the two charts beside each other
+  // are two readings of one stretch of days rather than two different spans.
+  // Drawn whether or not anyone has stepped on a scale yet — an empty frame says
+  // "this is where your weight will go" and a paragraph does not.
+  const weights = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(today, index - 6)
     const kg = logsByDate.get(date)?.weight_kg
     return { date, kg: kg === null || kg === undefined ? null : Number(kg) }
   })
