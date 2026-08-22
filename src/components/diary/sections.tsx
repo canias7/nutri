@@ -20,16 +20,12 @@ function toTimeInput(value: string | null | undefined): string {
 }
 
 export function MorningSection({ date, log }: SectionProps) {
-  const incomplete =
-    !log?.wake_time || log.weight_kg === null || log.energy_level === null
-
   return (
     <AutosaveSection
       title="Morning"
       description="Weigh yourself before breakfast, on an empty stomach."
       date={date}
       action={saveMorning}
-      incomplete={incomplete}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Wake-up time" htmlFor="wakeTime" required>
@@ -190,7 +186,6 @@ export function EveningSection({ date, log }: SectionProps) {
       description="How the day wound down."
       date={date}
       action={saveEvening}
-      incomplete={!log?.bed_time}
     >
       <Field label="Evening routine" htmlFor="eveningRitual">
         <Input

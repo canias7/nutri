@@ -2,7 +2,6 @@
 
 import { useActionState, useRef, useTransition } from 'react'
 
-import { IncompleteTag } from '@/components/diary/autosave-section'
 import { Field, FormMessage, Input } from '@/components/form-fields'
 import { addDrink, removeDrink } from '@/lib/diary/actions'
 import { idleSaveState } from '@/lib/diary/save-state'
@@ -29,7 +28,7 @@ export function WaterSection({
 
   return (
     <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <header className="mb-4 flex items-start justify-between gap-3">
+      <header className="mb-4 flex flex-col gap-0.5">
         <div className="flex flex-col gap-0.5">
           <h2 className="font-semibold">
             Water &amp; drinks
@@ -39,7 +38,6 @@ export function WaterSection({
             Everything you drink counts toward your target.
           </p>
         </div>
-        {drinks.length === 0 ? <IncompleteTag /> : null}
       </header>
 
       <div className="mb-5 flex flex-col gap-2">

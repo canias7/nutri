@@ -176,11 +176,6 @@ export function FoodSection({
   /** Short-lived signed URLs for the photos already on file, by object name. */
   photoUrls: Record<string, string>
 }) {
-  // Read off what was saved rather than what is typed: the autosave lands within
-  // the second, and a marker that flickers on every keystroke is worse than one
-  // that catches up.
-  const incomplete =
-    meals.length === 0 || meals.some((meal) => !meal.eaten.trim() || !meal.eaten_at)
 
   const [entries, setEntries] = useState<Entry[]>(() => fromMeals(meals))
   const added = useRef(0)
@@ -218,7 +213,6 @@ export function FoodSection({
       title="Food"
       description="Everything you ate today, in the order you ate it."
       hideSavedBadge
-      incomplete={incomplete}
       date={date}
       action={saveFood}
     >

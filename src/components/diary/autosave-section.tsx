@@ -45,7 +45,6 @@ export function AutosaveSection({
   children,
   hideSavedBadge,
   optional,
-  incomplete,
   ref,
 }: {
   title: string
@@ -55,11 +54,6 @@ export function AutosaveSection({
   children: ReactNode
   /** Says outright that the section can be left blank. */
   optional?: boolean
-  /**
-   * Something the diary expects is still missing. Shown instead of "Saved",
-   * because a section that saved and is still unanswered is not finished.
-   */
-  incomplete?: boolean
   /**
    * Drops the "Saved" badge once a save lands. Failures and work in progress
    * still show — it is the badge that sits there afterwards that is noise.
@@ -149,7 +143,6 @@ export function AutosaveSection({
           dirty={dirty}
           state={state}
           hideSaved={hideSavedBadge}
-          incomplete={incomplete}
         />
       </header>
 
@@ -181,29 +174,16 @@ export function OptionalTag() {
   )
 }
 
-export function IncompleteTag() {
-  return (
-    <span
-      role="status"
-      className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
-    >
-      Needs an answer
-    </span>
-  )
-}
-
 function SaveStatus({
   pending,
   dirty,
   state,
   hideSaved,
-  incomplete,
 }: {
   pending: boolean
   dirty: boolean
   state: SaveState
   hideSaved?: boolean
-  incomplete?: boolean
 }) {
   if (state.status === 'error') {
     return (
@@ -215,8 +195,6 @@ function SaveStatus({
 
   if (pending) return <Badge tone="muted">Saving…</Badge>
   if (dirty) return <Badge tone="muted">Unsaved</Badge>
-  // Ranked above "Saved": the write landed, the answer is still missing.
-  if (incomplete) return <IncompleteTag />
   if (state.status === 'saved' && !hideSaved) return <Badge tone="good">Saved</Badge>
   return null
 }
