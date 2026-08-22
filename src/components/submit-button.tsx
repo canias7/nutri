@@ -7,10 +7,13 @@ export function SubmitButton({
   children,
   pendingLabel,
   variant = 'primary',
+  disabled,
 }: {
   children: ReactNode
   pendingLabel?: string
   variant?: 'primary' | 'ghost'
+  /** For an action with nothing to act on — better than letting it fail. */
+  disabled?: boolean
 }) {
   const { pending } = useFormStatus()
 
@@ -24,7 +27,11 @@ export function SubmitButton({
       : 'border border-black/10 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10'
 
   return (
-    <button type="submit" disabled={pending} className={`${base} ${look}`}>
+    <button
+      type="submit"
+      disabled={pending || disabled}
+      className={`${base} ${look}`}
+    >
       {pending ? (
         <>
           <Spinner />

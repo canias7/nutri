@@ -54,14 +54,16 @@ export function WaterWeek({
       ? Math.round(loggedDays.reduce((sum, day) => sum + day.ml, 0) / loggedDays.length)
       : 0
 
-  // Headroom above whichever is taller, so a big day and the target line both fit.
-  const ceiling = Math.max(targetMl, ...days.map((day) => day.ml)) * 1.18 || 1
+  // Headroom above whichever is taller, so a day that overshoots still fits.
+  const ceiling = Math.max(targetMl, ...days.map((day) => day.ml)) * 1.12 || 1
   const plotW = VIEW_W - PAD_X * 2 - GUTTER
   const band = plotW / days.length
-  const barW = Math.max(4, band - 10)
+  // Slim and capped: a seventh of the width is a block, not a bar.
+  const barW = Math.min(Math.max(6, band - 16), 34)
   const y = (ml: number) =>
     PAD_TOP + (1 - ml / ceiling) * (VIEW_H - PAD_TOP - PAD_BOTTOM)
   const baseline = VIEW_H - PAD_BOTTOM
+  const targetTop = y(targetMl)
 
   const shown = active === null ? null : days[active]
 
@@ -89,49 +91,38 @@ export function WaterWeek({
         aria-label={`Water over the last ${days.length} days against a ${formatNumber(targetMl)} ml target; reached on ${met} of them.`}
         onPointerLeave={() => setActive(null)}
       >
-        <line
-          x1={PAD_X}
-          y1={baseline}
-          x2={VIEW_W - PAD_X}
-          y2={baseline}
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-black/10 dark:text-white/15"
-        />
-
         {days.map((day, index) => {
           const x = PAD_X + index * band + (band - barW) / 2
           const reached = day.ml >= targetMl
           const top = y(day.ml)
+          const dim = active !== null && active !== index
 
           return (
-            <g key={day.date}>
+            <g key={day.date} opacity={dim ? 0.45 : 1}>
+              {/* A slot the height of the target behind every day. Seven of
+                  these read as a week; seven bars over an empty field read as
+                  one day that happened and six that broke. */}
+              <rect
+                x={x}
+                y={targetTop}
+                width={barW}
+                height={baseline - targetTop}
+                rx="5"
+                fill="currentColor"
+                className="text-slate-100 dark:text-white/[0.07]"
+              />
+
               {day.ml > 0 ? (
                 <rect
                   x={x}
                   y={top}
                   width={barW}
-                  height={Math.max(3, baseline - top)}
-                  rx="4"
+                  height={Math.max(4, baseline - top)}
+                  rx="5"
                   fill={reached ? ACCENT : 'currentColor'}
-                  className={
-                    reached ? '' : 'text-emerald-200 dark:text-emerald-900'
-                  }
-                  opacity={active === null || active === index ? 1 : 0.55}
+                  className={reached ? '' : 'text-emerald-400 dark:text-emerald-700'}
                 />
-              ) : (
-                // A logged day that drank nothing and an untouched day both read
-                // as a stub, which is honest: neither has water in it.
-                <rect
-                  x={x}
-                  y={baseline - 3}
-                  width={barW}
-                  height={3}
-                  rx="1.5"
-                  fill="currentColor"
-                  className="text-black/12 dark:text-white/15"
-                />
-              )}
+              ) : null}
 
               <rect
                 x={PAD_X + index * band}
@@ -147,18 +138,18 @@ export function WaterWeek({
 
         <line
           x1={PAD_X}
-          y1={y(targetMl)}
-          x2={VIEW_W - PAD_X - GUTTER}
-          y2={y(targetMl)}
-          stroke={ACCENT}
-          strokeWidth="1.5"
-          strokeDasharray="5 4"
-          opacity="0.8"
+          y1={baseline}
+          x2={VIEW_W - PAD_X - GUTTER + 4}
+          y2={baseline}
+          stroke="currentColor"
+          strokeWidth="1"
+          className="text-black/10 dark:text-white/15"
         />
+
         <text
-          x={VIEW_W - PAD_X - GUTTER + 8}
-          y={y(targetMl) + 4}
-          className="fill-emerald-700 text-[11px] font-semibold tabular-nums dark:fill-emerald-400"
+          x={VIEW_W - PAD_X - GUTTER + 10}
+          y={targetTop + 4}
+          className="fill-slate-400 text-[10px] font-medium tabular-nums dark:fill-slate-500"
         >
           {formatNumber(targetMl)}
         </text>

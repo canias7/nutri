@@ -154,10 +154,13 @@ export function WeightSinceStart({
         />
         {/* Named, not numbered: "155 lb 7 oz" needs a gutter half the chart
             wide, and the caption above already carries the figure. */}
+        {/* Anchored to the right edge rather than run out from the gutter, so
+            the word cannot spill past the viewBox and get clipped. */}
         <text
-          x={VIEW_W - PAD_R + 7}
+          x={VIEW_W - 4}
           y={zero + 4}
-          className="fill-slate-500 text-[10px] font-semibold uppercase tracking-wide dark:fill-slate-400"
+          textAnchor="end"
+          className="fill-slate-500 text-[10px] font-semibold dark:fill-slate-400"
         >
           start
         </text>

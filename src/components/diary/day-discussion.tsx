@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 
 import { FormMessage, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
@@ -22,11 +22,15 @@ export function DayDiscussion({
   hasUnread: boolean
 }) {
   const [state, action] = useActionState(postDayComment, idleFormState)
-  const formRef = useRef<HTMLFormElement>(null)
+  // The box is controlled, so emptying it is part of sending rather than
+  // something an effect has to do afterwards once the state comes back.
+  const [draft, setDraft] = useState('')
 
-  useEffect(() => {
-    if (state.status === 'idle' && !state.fieldErrors) formRef.current?.reset()
-  }, [state])
+  function post(formData: FormData) {
+    if (!draft.trim()) return
+    setDraft('')
+    action(formData)
+  }
 
   // Opening the day is what counts as reading it.
   useEffect(() => {
@@ -86,24 +90,24 @@ export function DayDiscussion({
         </ul>
       )}
 
-      <form ref={formRef} action={action} className="flex flex-col gap-3">
+      <form action={post} className="flex flex-col gap-3">
         <input type="hidden" name="date" value={date} />
         <FormMessage>{state.message}</FormMessage>
 
+        {/* The section is optional, so pressing Post on an empty box should be
+            impossible rather than an error. Nothing to say, nothing to press. */}
         <Textarea
           id="dayComment"
           name="body"
           placeholder="Ask a question or leave a note about this day…"
           aria-label="Your comment on this day"
-          invalid={Boolean(state.fieldErrors?.body)}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
         />
-        {state.fieldErrors?.body ? (
-          <p className="text-xs font-medium text-red-600 dark:text-red-400">
-            {state.fieldErrors.body[0]}
-          </p>
-        ) : null}
 
-        <SubmitButton pendingLabel="Posting…">Post</SubmitButton>
+        <SubmitButton pendingLabel="Posting…" disabled={!draft.trim()}>
+          Post
+        </SubmitButton>
       </form>
     </section>
   )

@@ -5,16 +5,10 @@ import type { ReactNode } from 'react'
 import { StressEnergy } from '@/components/dashboard/stress-energy'
 import { WaterWeek } from '@/components/dashboard/water-week'
 import { WeightSinceStart } from '@/components/dashboard/weight-since-start'
-import { UNIT_SUFFIX, WeightChangeText, WeightText } from '@/components/units/readouts'
 import { requireClient } from '@/lib/auth/session'
 import { addDays, formatShortDate, streakFrom } from '@/lib/diary/date'
-import { formatNumber } from '@/lib/format'
 import { resolveToday } from '@/lib/diary/today'
-import {
-  getDiaryDay,
-  getRecentLogs,
-  getUnreadDays,
-} from '@/lib/diary/queries'
+import { getRecentLogs, getUnreadDays } from '@/lib/diary/queries'
 
 export const metadata: Metadata = { title: 'Dashboard · nutri' }
 
@@ -22,8 +16,7 @@ export default async function DashboardPage() {
   const { viewer, client } = await requireClient()
   const today = await resolveToday()
 
-  const [day, recent, unreadDays] = await Promise.all([
-    getDiaryDay(viewer.id, today),
+  const [recent, unreadDays] = await Promise.all([
     getRecentLogs(viewer.id, 14),
     getUnreadDays(viewer.id),
   ])
@@ -40,8 +33,6 @@ export default async function DashboardPage() {
     const log = logsByDate.get(date)
     return { date, ml: log?.water_total_ml ?? 0, logged: Boolean(log) }
   })
-  const waterToday = day.log?.water_total_ml ?? 0
-  const waterPct = Math.min(100, Math.round((waterToday / client.water_target_ml) * 100))
 
   // Oldest first so the chart reads left to right.
   const weights = recent
@@ -59,14 +50,11 @@ export default async function DashboardPage() {
     }))
     .reverse()
 
-  const latestWeight = weights.at(-1)
   // Without a starting weight on the profile, the oldest morning in the window
   // stands in for it — a chart of movement is still worth drawing, and saying
   // which baseline it used is better than showing nothing.
   const profileStart = client.start_weight_kg ? Number(client.start_weight_kg) : null
   const baseline = profileStart ?? weights[0]?.kg ?? null
-  const change =
-    latestWeight && profileStart !== null ? latestWeight.kg - profileStart : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,33 +91,9 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
+      {/* Water and weight had a tile each directly above the charts that plot
+          them. The streak is the one figure nothing below repeats. */}
       <section className="grid gap-3 sm:grid-cols-3">
-        <Stat
-          label="Water today"
-          value={formatNumber(waterToday)}
-          unit="ml"
-          hint={`${waterPct}% of ${formatNumber(client.water_target_ml)} ml`}
-          progress={waterPct}
-        />
-        <Stat
-          label="Weight"
-          value={
-            latestWeight ? (
-              <WeightText kg={latestWeight.kg} unitClassName={UNIT_SUFFIX} />
-            ) : (
-              '—'
-            )
-          }
-          hint={
-            change === null ? (
-              'Log it each morning'
-            ) : (
-              <>
-                <WeightChangeText kg={change} /> since starting
-              </>
-            )
-          }
-        />
         <Stat
           label="Streak"
           value={String(streak)}
