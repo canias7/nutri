@@ -10,11 +10,9 @@ import { formatShortDate, streakFrom } from '@/lib/diary/date'
 import { formatNumber } from '@/lib/format'
 import { resolveToday } from '@/lib/diary/today'
 import {
-  completedSections,
   getDiaryDay,
   getRecentLogs,
   getUnreadDays,
-  SECTION_LABELS,
 } from '@/lib/diary/queries'
 
 export const metadata: Metadata = { title: 'Dashboard · nutri' }
@@ -30,9 +28,6 @@ export default async function DashboardPage() {
   ])
 
   const firstName = viewer.profile.full_name.split(' ')[0] || 'there'
-  const done = completedSections(day)
-  const totalSections = Object.keys(SECTION_LABELS).length
-
   const streak = streakFrom(new Set(recent.map((log) => log.log_date)), today)
   const waterToday = day.log?.water_total_ml ?? 0
   const waterPct = Math.min(100, Math.round((waterToday / client.water_target_ml) * 100))
@@ -101,34 +96,6 @@ export default async function DashboardPage() {
           </ul>
         </section>
       ) : null}
-
-      <Link
-        href="/diary"
-        className="flex items-center justify-between gap-4 rounded-2xl bg-emerald-600 p-5 text-white shadow-sm transition hover:bg-emerald-700"
-      >
-        <span className="flex flex-col gap-0.5">
-          <span className="text-base font-semibold">
-            {done.size === 0
-              ? "Log today's entry"
-              : done.size === totalSections
-                ? "Today's diary is complete"
-                : 'Carry on with today'}
-          </span>
-          <span className="text-sm text-emerald-50/90">
-            {done.size} of {totalSections} sections filled in
-          </span>
-        </span>
-        <svg
-          viewBox="0 0 24 24"
-          className="size-5 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden
-        >
-          <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </Link>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Stat
