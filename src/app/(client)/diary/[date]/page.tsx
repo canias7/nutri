@@ -8,7 +8,6 @@ import {
   ExtraSupplementsSection,
   MorningSection,
 } from '@/components/diary/sections'
-import { DateJump } from '@/components/diary/date-jump'
 import { DayDiscussion } from '@/components/diary/day-discussion'
 import { FoodSection } from '@/components/diary/food-section'
 import { SupplementsChecklist } from '@/components/diary/supplements-checklist'
@@ -48,15 +47,8 @@ export default async function DiaryPage({ params }: PageProps<'/diary/[date]'>) 
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-3">
-        <WeekStrip date={date} today={today} />
-
-        {/* The strip only reaches back a week. Catching up on a fortnight ago
-            needs a way out of it that is not thirteen taps of an arrow. */}
-        <div className="flex justify-center">
-          <DateJump date={date} today={today} />
-        </div>
-      </header>
+      {/* The strip reaches a week back; History is the way to anything older. */}
+      <WeekStrip date={date} today={today} />
 
       <MorningSection date={date} log={day.log} />
 

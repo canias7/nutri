@@ -100,7 +100,9 @@ something else on purpose, so the difference does not keep getting read as a gap
 - **A week strip, not a heading with arrows.** The day picker shows the seven
   days of the week being read; arrows still step one day and carry into the week
   either side. The step counter above the diary is gone with it — a diary that
-  scores you out of six invites filling boxes rather than answering them.
+  scores you out of six invites filling boxes rather than answering them. There
+  is no "log for another date" jump; History is the way to anything older than
+  the week on screen.
 - **Every drink counts toward the water target.** The reference counts clean
   water only, and asks per drink. A total that disagrees with the list above it
   is worth less than the distinction it was drawing.
