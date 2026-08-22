@@ -1,10 +1,9 @@
 name: Deploy to Cloudflare
 
-# Deploys are driven by Cloudflare's own Git integration (Workers Builds), so
-# this runs only when started by hand — as a fallback, or to deploy a branch
-# Cloudflare is not watching. Needs CLOUDFLARE_API_TOKEN and
-# CLOUDFLARE_ACCOUNT_ID in repository secrets.
+# Reads CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID from repository secrets.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 # One deploy at a time; a queued push should replace a pending one rather than
