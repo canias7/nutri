@@ -77,3 +77,18 @@ export function formatWeight(kg: number, system: UnitSystem): string {
 export function formatWeightChange(kg: number, system: UnitSystem): string {
   return `${kg < 0 ? '-' : '+'}${formatWeight(Math.abs(kg), system)}`
 }
+
+/**
+ * A weight *difference* on a ruler, not a scale reading.
+ *
+ * Decimal pounds are wrong for a weight — no scale shows 155.2 lb — but an axis
+ * is a ruler, and "−4 lb" reads better on one than "−4 lb 0 oz". Readouts still
+ * go through formatWeight; this is only for tick marks.
+ */
+export function weightDeltaForAxis(kg: number, system: UnitSystem): number {
+  return system === 'metric' ? kg : kg / KG_PER_LB
+}
+
+export function weightDeltaAxisLabel(system: UnitSystem): string {
+  return system === 'metric' ? 'kg' : 'lb'
+}

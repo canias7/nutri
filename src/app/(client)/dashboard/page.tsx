@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { StressEnergy } from '@/components/dashboard/stress-energy'
 import { WaterWeek } from '@/components/dashboard/water-week'
-import { WeightTrend } from '@/components/dashboard/weight-trend'
+import { WeightSinceStart } from '@/components/dashboard/weight-since-start'
 import { UNIT_SUFFIX, WeightChangeText, WeightText } from '@/components/units/readouts'
 import { requireClient } from '@/lib/auth/session'
 import { addDays, formatShortDate, streakFrom } from '@/lib/diary/date'
@@ -60,9 +60,13 @@ export default async function DashboardPage() {
     .reverse()
 
   const latestWeight = weights.at(-1)
-  const startWeight = client.start_weight_kg ? Number(client.start_weight_kg) : null
+  // Without a starting weight on the profile, the oldest morning in the window
+  // stands in for it — a chart of movement is still worth drawing, and saying
+  // which baseline it used is better than showing nothing.
+  const profileStart = client.start_weight_kg ? Number(client.start_weight_kg) : null
+  const baseline = profileStart ?? weights[0]?.kg ?? null
   const change =
-    latestWeight && startWeight !== null ? latestWeight.kg - startWeight : null
+    latestWeight && profileStart !== null ? latestWeight.kg - profileStart : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -141,21 +145,25 @@ export default async function DashboardPage() {
         <WaterWeek days={waterWeek} targetMl={client.water_target_ml} today={today} />
       </section>
 
-      {weights.length >= 2 ? (
+      {baseline !== null && weights.length >= 2 ? (
         <section className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Weight, last 14 days
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Weight against your start
           </h2>
-          <WeightTrend points={weights} />
+          <WeightSinceStart
+            points={weights}
+            startKg={baseline}
+            baselineIsFirstLog={profileStart === null}
+          />
         </section>
       ) : (
         <section className="rounded-2xl border border-dashed border-black/15 p-5 dark:border-white/15">
           <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Weight trend
+            Weight against your start
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Not enough data to plot yet. Weigh yourself in the mornings and log it
-            in the diary — two days is enough to start a line.
+            in the diary — two days is enough to start.
           </p>
         </section>
       )}

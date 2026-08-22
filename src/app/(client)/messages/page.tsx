@@ -1,38 +1,30 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
-import { MessageThread } from '@/components/messages/message-thread'
+import { Chat } from '@/components/messages/chat'
 import { requireClient } from '@/lib/auth/session'
+import { resolveToday } from '@/lib/diary/today'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Messages · nutri' }
 
 export default async function MessagesPage() {
   const { viewer, client } = await requireClient()
+  const today = await resolveToday()
 
+  // An unlinked client still gets the conversation, with the composer closed and
+  // the reason in it — a bare card explaining the absence teaches nobody where
+  // messages will appear once there is somebody to send them to.
   if (!client.nutritionist_id) {
     return (
-      <div className="flex max-w-xl flex-col gap-4">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            General questions and support.
-          </p>
-        </header>
-
-        <div className="rounded-2xl border border-dashed border-black/15 p-5 dark:border-white/15">
-          <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-            You are not linked to a nutritionist yet, so there is nobody to write
-            to. Add their invite code and this opens up.
-          </p>
-          <Link
-            href="/profile"
-            className="inline-flex rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
-            Add an invite code
-          </Link>
-        </div>
-      </div>
+      <Page>
+        <Chat
+          messages={[]}
+          coachName="Your nutritionist"
+          hasUnread={false}
+          today={today}
+          linked={false}
+        />
+      </Page>
     )
   }
 
@@ -51,7 +43,7 @@ export default async function MessagesPage() {
       .order('created_at'),
   ])
 
-  const coachName = coach?.full_name || 'your nutritionist'
+  const coachName = coach?.full_name || 'Your nutritionist'
   const messages = (rows ?? []).map((row) => ({
     id: row.id,
     body: row.body,
@@ -63,15 +55,28 @@ export default async function MessagesPage() {
   )
 
   return (
-    <div className="flex max-w-xl flex-col gap-5">
+    <Page>
+      <Chat
+        messages={messages}
+        coachName={coachName}
+        hasUnread={hasUnread}
+        today={today}
+        linked
+      />
+    </Page>
+  )
+}
+
+function Page({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          A direct line to {coachName}, not tied to any one diary day.
+          General questions and support.
         </p>
       </header>
-
-      <MessageThread messages={messages} coachName={coachName} hasUnread={hasUnread} />
+      {children}
     </div>
   )
 }
