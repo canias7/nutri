@@ -325,7 +325,6 @@ export type Database = {
       }
       log_drinks: {
         Row: {
-          counts_as_water: boolean
           created_at: string
           daily_log_id: string
           drank_at: string | null
@@ -334,7 +333,6 @@ export type Database = {
           volume_ml: number
         }
         Insert: {
-          counts_as_water?: boolean
           created_at?: string
           daily_log_id: string
           drank_at?: string | null
@@ -343,7 +341,6 @@ export type Database = {
           volume_ml: number
         }
         Update: {
-          counts_as_water?: boolean
           created_at?: string
           daily_log_id?: string
           drank_at?: string | null
@@ -370,7 +367,8 @@ export type Database = {
           eaten_at: string | null
           id: string
           method: string
-          slot: Database['public']['Enums']['meal_slot']
+          slot: Database['public']['Enums']['meal_slot'] | null
+          sort_order: number
           updated_at: string
         }
         Insert: {
@@ -381,7 +379,8 @@ export type Database = {
           eaten_at?: string | null
           id?: string
           method?: string
-          slot: Database['public']['Enums']['meal_slot']
+          slot?: Database['public']['Enums']['meal_slot'] | null
+          sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -392,7 +391,8 @@ export type Database = {
           eaten_at?: string | null
           id?: string
           method?: string
-          slot?: Database['public']['Enums']['meal_slot']
+          slot?: Database['public']['Enums']['meal_slot'] | null
+          sort_order?: number
           updated_at?: string
         }
         Relationships: [

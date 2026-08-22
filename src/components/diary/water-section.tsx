@@ -40,8 +40,7 @@ export function WaterSection({
       <header className="mb-4 flex flex-col gap-0.5">
         <h2 className="font-semibold">Water &amp; drinks</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Only clean water counts toward your target — everything else is logged
-          but tracked separately.
+          Everything you drink counts toward your target.
         </p>
       </header>
 
@@ -100,14 +99,7 @@ export function WaterSection({
               key={drink.id}
               className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm dark:bg-white/5"
             >
-              <span className="flex items-center gap-2">
-                <span className="font-medium">{drink.kind || 'Water'}</span>
-                {!drink.counts_as_water ? (
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    not counted
-                  </span>
-                ) : null}
-              </span>
+              <span className="font-medium">{drink.kind || 'Water'}</span>
               <span className="flex items-center gap-3">
                 <span className="tabular-nums text-slate-600 dark:text-slate-300">
                   {drink.volume_ml} ml
@@ -163,16 +155,6 @@ export function WaterSection({
             </button>
           </div>
         </div>
-
-        <label className="flex w-fit items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-          <input
-            type="checkbox"
-            name="countsAsWater"
-            defaultChecked
-            className="size-4 accent-emerald-600"
-          />
-          Counts toward my water target
-        </label>
       </form>
     </section>
   )

@@ -86,3 +86,29 @@ export function streakFrom(dates: Set<string>, today: string): number {
 
   return streak
 }
+
+/** "Wednesday" — for a day being read on its own. */
+export function weekdayName(date: string): string {
+  return parts(date).weekday
+}
+
+/** "22 August" — the date under a heading that already names the day. */
+export function formatDayMonth(date: string): string {
+  const { day, month } = parts(date)
+  return `${day} ${month}`
+}
+
+/**
+ * The seven dates of the week `date` falls in, Sunday first.
+ *
+ * Sunday rather than Monday because the rest of the app reads US-first — the
+ * date inputs render MM/DD/YYYY and weights are entered in pounds.
+ */
+export function weekOf(date: string): string[] {
+  const value = new Date(`${date}T00:00:00Z`)
+  const sunday = addDays(date, -value.getUTCDay())
+  return Array.from({ length: 7 }, (_, index) => addDays(sunday, index))
+}
+
+/** Single letters for the week strip, Sunday first: S M T W T F S. */
+export const WEEKDAY_INITIALS = WEEKDAYS.map((day) => day[0])

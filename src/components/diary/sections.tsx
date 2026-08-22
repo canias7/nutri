@@ -8,10 +8,9 @@ import {
   saveDaytime,
   saveEvening,
   saveExtraSupplements,
-  saveMeal,
   saveMorning,
 } from '@/lib/diary/actions'
-import type { DailyLog, LogMeal } from '@/lib/diary/queries'
+import type { DailyLog } from '@/lib/diary/queries'
 
 type SectionProps = { date: string; log: DailyLog | null }
 
@@ -86,64 +85,6 @@ export function MorningSection({ date, log }: SectionProps) {
           defaultValue={log?.first_warm_drink ?? ''}
         />
       </Field>
-    </AutosaveSection>
-  )
-}
-
-export function MealSection({
-  date,
-  slot,
-  label,
-  defaultTime,
-  meal,
-}: {
-  date: string
-  slot: string
-  label: string
-  defaultTime: string
-  meal: LogMeal | undefined
-}) {
-  return (
-    <AutosaveSection title={label} date={date} action={saveMeal}>
-      <input type="hidden" name="slot" value={slot} />
-
-      <Field label="What you ate" htmlFor={`${slot}-eaten`}>
-        <Textarea
-          id={`${slot}-eaten`}
-          name="eaten"
-          placeholder="Omelette of 2 eggs, avocado, salad leaves, rye bread."
-          defaultValue={meal?.eaten ?? ''}
-        />
-      </Field>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Portion" htmlFor={`${slot}-amount`}>
-          <Input
-            id={`${slot}-amount`}
-            name="amount"
-            placeholder="≈250 g"
-            defaultValue={meal?.amount ?? ''}
-          />
-        </Field>
-
-        <Field label="Prepared how" htmlFor={`${slot}-method`}>
-          <Input
-            id={`${slot}-method`}
-            name="method"
-            placeholder="Steamed, stewed…"
-            defaultValue={meal?.method ?? ''}
-          />
-        </Field>
-
-        <Field label="Time" htmlFor={`${slot}-time`}>
-          <Input
-            id={`${slot}-time`}
-            name="eatenAt"
-            type="time"
-            defaultValue={toTimeInput(meal?.eaten_at) || defaultTime}
-          />
-        </Field>
-      </div>
     </AutosaveSection>
   )
 }

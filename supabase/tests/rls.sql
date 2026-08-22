@@ -46,13 +46,13 @@ insert into public.log_drinks (daily_log_id, kind, volume_ml)
 select id, 'water', 500 from public.daily_logs where client_id = '11111111-1111-1111-1111-111111111111';
 insert into public.log_drinks (daily_log_id, kind, volume_ml)
 select id, 'water', 750 from public.daily_logs where client_id = '11111111-1111-1111-1111-111111111111';
-insert into public.log_drinks (daily_log_id, kind, volume_ml, counts_as_water)
-select id, 'coffee', 200, false from public.daily_logs where client_id = '11111111-1111-1111-1111-111111111111';
+insert into public.log_drinks (daily_log_id, kind, volume_ml)
+select id, 'coffee', 200 from public.daily_logs where client_id = '11111111-1111-1111-1111-111111111111';
 
 insert into results select 'A_sees_own_logs [1]', count(*)::text from public.daily_logs;
 
--- Coffee must not count toward hydration: 500 + 750 only.
-insert into results select 'water_total_trigger [1250]',
+-- Every drink counts now, coffee included: 500 + 750 + 200.
+insert into results select 'water_total_trigger [1450]',
   (select water_total_ml::text from public.daily_logs
    where client_id = '11111111-1111-1111-1111-111111111111');
 

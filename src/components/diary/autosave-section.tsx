@@ -4,13 +4,17 @@ import {
   useActionState,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   useTransition,
 } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 
 import { idleSaveState, type SaveState } from '@/lib/diary/save-state'
+
+/** Lets a section ask for a save when nothing in the form itself changed. */
+export type AutosaveHandle = { save: () => void }
 
 const SAVE_DELAY_MS = 900
 /** How long to wait before retrying when a save is already in flight. */
@@ -39,12 +43,18 @@ export function AutosaveSection({
   date,
   action,
   children,
+  ref,
 }: {
   title: string
   description?: string
   date: string
   action: (state: SaveState, formData: FormData) => Promise<SaveState>
   children: ReactNode
+  /**
+   * Exposes a save, for a section whose shape can change without any field
+   * changing — removing a row leaves nothing behind to fire an onChange.
+   */
+  ref?: Ref<AutosaveHandle>
 }) {
   const [state, formAction, pending] = useActionState(action, idleSaveState)
   const [, startTransition] = useTransition()
@@ -98,6 +108,10 @@ export function AutosaveSection({
     },
     [clearTimer, submit],
   )
+
+  // Zero rather than immediate: the caller has usually just changed state, and
+  // the form has to re-render before there is anything new to read off it.
+  useImperativeHandle(ref, () => ({ save: () => schedule(0) }), [schedule])
 
   // A pending timer would otherwise fire after navigation, against a form that
   // is no longer mounted.

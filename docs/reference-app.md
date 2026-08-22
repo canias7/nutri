@@ -83,3 +83,32 @@ measurement dynamics vs previous, log history (14 days).
 - Account deletion (type your name to confirm)
 - Demo login / quick role switch
 - Offline caching, draft autosave
+
+## Where nutri deliberately departs
+
+This file describes the reference app. These are the places our version does
+something else on purpose, so the difference does not keep getting read as a gap.
+
+- **Clients only.** Public sign-up creates clients; nutritionist accounts are
+  provisioned against the database. Anyone able to register themselves as a
+  specialist could start collecting clients.
+- **English only.** The reference defaults to Russian with English available.
+- **One food list, not five named meals.** The reference gives breakfast, second
+  breakfast, lunch, snack and dinner a box each. On most days that is four empty
+  boxes, and there is nowhere to put a sixth meal. Ours is a single section with
+  an entry per thing eaten, added as the day goes.
+- **A week strip, not a heading with arrows.** The day picker shows the seven
+  days of the week being read; arrows still step one day and carry into the week
+  either side. The step counter above the diary is gone with it — a diary that
+  scores you out of six invites filling boxes rather than answering them.
+- **Every drink counts toward the water target.** The reference counts clean
+  water only, and asks per drink. A total that disagrees with the list above it
+  is worth less than the distinction it was drawing.
+- **No stool records and no day poster.** Both dropped at the owner's request;
+  digestion is still asked about in "How you felt". `log_stools` is left in the
+  schema rather than dropped, so the days already logged are not thrown away.
+- **No demo login.** One click into somebody's health diary is a liability, not
+  a feature.
+
+Still missing, and known: offline writes (the service worker caches reads only),
+resend-confirmation, an OG image, and Russian localisation.

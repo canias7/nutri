@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/server'
 import type { TablesUpdate } from '@/lib/supabase/database.types'
 
 import { isValidDateParam } from './date'
-import type { MealSlot } from './queries'
 import type { SaveState } from './save-state'
 
 const saved: SaveState = { status: 'saved' }
@@ -146,30 +145,63 @@ export async function saveComplaints(
   })
 }
 
-export async function saveMeal(
+/**
+ * The whole food section at once: every entry the day has, in order.
+ *
+ * Entries are keyed by their position rather than by row id, so this is an
+ * upsert per entry followed by a delete of anything past the end. A failed
+ * write leaves the previous answers standing, which a delete-then-insert would
+ * not — and the client never has to learn what id a row was given.
+ */
+export async function saveFood(
   _previous: SaveState,
   formData: FormData,
 ): Promise<SaveState> {
   const date = field(formData, 'date')
-  const slot = field(formData, 'slot') as MealSlot
+
+  const eaten = formData.getAll('eaten').map(String)
+  const amount = formData.getAll('amount').map(String)
+  const method = formData.getAll('method').map(String)
+  const eatenAt = formData.getAll('eatenAt').map(String)
 
   const log = await ensureLog(date)
   if (!log) return failed
 
-  const supabase = await createClient()
-  const { error } = await supabase.from('log_meals').upsert(
-    {
-      daily_log_id: log.id,
-      slot,
-      eaten: field(formData, 'eaten'),
-      amount: field(formData, 'amount'),
-      method: field(formData, 'method'),
-      eaten_at: optionalTime(formData, 'eatenAt'),
-    },
-    { onConflict: 'daily_log_id,slot' },
-  )
+  const rows = eaten.map((text, index) => ({
+    daily_log_id: log.id,
+    sort_order: index,
+    eaten: text.trim(),
+    amount: (amount[index] ?? '').trim(),
+    method: (method[index] ?? '').trim(),
+    eaten_at: eatenAt[index] ? eatenAt[index] : null,
+  }))
 
-  if (error) return failed
+  // An entry with nothing in it is not an entry. Trailing blanks are simply not
+  // written, so opening the section and closing it again leaves no trace.
+  const filled = rows.filter(
+    (row) => row.eaten || row.amount || row.method || row.eaten_at,
+  )
+  // Positions have to stay dense, or the unique key leaves gaps that the next
+  // save collides with.
+  const dense = filled.map((row, index) => ({ ...row, sort_order: index }))
+
+  const supabase = await createClient()
+
+  if (dense.length > 0) {
+    const { error } = await supabase
+      .from('log_meals')
+      .upsert(dense, { onConflict: 'daily_log_id,sort_order' })
+    if (error) return failed
+  }
+
+  const { error: pruneError } = await supabase
+    .from('log_meals')
+    .delete()
+    .eq('daily_log_id', log.id)
+    .gte('sort_order', dense.length)
+
+  if (pruneError) return failed
+
   refresh(date)
   return saved
 }
@@ -231,8 +263,6 @@ export async function addDrink(
     daily_log_id: log.id,
     kind: field(formData, 'kind') || 'Water',
     volume_ml: Math.round(volume),
-    // Only clean water counts toward the hydration target.
-    counts_as_water: field(formData, 'countsAsWater') === 'on',
     drank_at: optionalTime(formData, 'drankAt'),
   })
 
@@ -245,35 +275,6 @@ export async function removeDrink(id: string, date: string): Promise<SaveState> 
   await requireClient()
   const supabase = await createClient()
   const { error } = await supabase.from('log_drinks').delete().eq('id', id)
-  if (error) return failed
-  refresh(date)
-  return saved
-}
-
-export async function addStool(
-  _previous: SaveState,
-  formData: FormData,
-): Promise<SaveState> {
-  const date = field(formData, 'date')
-  const log = await ensureLog(date)
-  if (!log) return failed
-
-  const supabase = await createClient()
-  const { error } = await supabase.from('log_stools').insert({
-    daily_log_id: log.id,
-    occurred_at: optionalTime(formData, 'occurredAt'),
-    notes: field(formData, 'notes'),
-  })
-
-  if (error) return failed
-  refresh(date)
-  return saved
-}
-
-export async function removeStool(id: string, date: string): Promise<SaveState> {
-  await requireClient()
-  const supabase = await createClient()
-  const { error } = await supabase.from('log_stools').delete().eq('id', id)
   if (error) return failed
   refresh(date)
   return saved
