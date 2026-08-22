@@ -42,3 +42,8 @@ next-env.d.ts
 
 # keep the example env file tracked
 !.env.example
+
+# cloudflare
+.open-next
+.wrangler
+cloudflare-env.d.ts

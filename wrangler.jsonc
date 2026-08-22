@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nutri",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-01",
+  // Next.js and the Supabase client both reach for Node built-ins; without this
+  // the worker fails at runtime rather than at build.
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  // Both values are publishable — row level security is what protects the data.
+  // Next.js inlines NEXT_PUBLIC_* at build time, so these also need to be present
+  // in the environment that runs the build.
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://gezrztmxyxbtbbasvbix.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6"
+  }
+}

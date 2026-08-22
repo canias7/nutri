@@ -44,29 +44,47 @@ To sign in, seed two working accounts with `supabase/seed.sql`:
 
 The nutritionist's invite code is `dana_coach`.
 
-## Deploying
+## Deploying to Cloudflare
 
-Import the repository at [vercel.com/new](https://vercel.com/new). Next.js needs
-no build configuration; set two environment variables:
+Runs as a Worker through [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare),
+which gives a free `*.workers.dev` address with no domain needed.
 
+```bash
+npx wrangler login     # once
+npm run cf:deploy
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://gezrztmxyxbtbbasvbix.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_7cNwGYry3xq_-zboLS8RTQ_IVLHRiA6
-```
 
-Every branch gets its own preview URL, so work in progress is deployable without
-touching the production branch.
+`npm run cf:preview` runs the built Worker locally first, which is worth doing —
+the Workers runtime is not Node, and things that pass `next build` can still fail
+there.
 
-Once you have the deployed address, two more settings matter or email links break:
+Both Supabase values are publishable, so they live in `wrangler.jsonc` and the
+deploy needs no secrets. Note that Next.js inlines `NEXT_PUBLIC_*` at build time,
+so they must also be in the environment that runs the build.
 
-1. Set `NEXT_PUBLIC_SITE_URL` to that address. Confirmation links are built from
-   it, and behind a proxy the request headers describe the hop rather than the
-   address the user typed.
+Once you have the deployed address, two settings matter or confirmation emails
+lead nowhere:
+
+1. Set `NEXT_PUBLIC_SITE_URL` to that address. Email links are built from it, and
+   behind a proxy the request headers describe the hop rather than the address the
+   user typed.
 2. Add it to **Authentication → URL Configuration → Redirect URLs** in the
-   Supabase dashboard. Supabase refuses to redirect anywhere not on that list.
+   Supabase dashboard, which refuses to redirect anywhere not on that list.
 
 Supabase's built-in mailer sends only a couple of messages an hour and rejects
 domains without MX records, so configure your own SMTP before real signups.
+
+### Why there is no proxy.ts
+
+Cloudflare cannot run Node.js middleware, and Next.js 16 runs Proxy on the Node
+runtime only — the `runtime` option was removed, so there is no edge variant to
+switch to. Both jobs moved instead:
+
+- **Route protection** lives in the layouts, via `requireClient` / `requireCoach`.
+  That was always the authoritative check; the proxy only duplicated it.
+- **Session refresh** lives in `src/components/session-refresher.tsx`. The browser
+  client rotates tokens on its own and writes them to `document.cookie`; the
+  component re-renders Server Components when the auth state changes.
 
 ## Supabase
 

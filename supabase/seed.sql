@@ -10,9 +10,14 @@
 -- email domain can actually receive mail, and its built-in mailer is rate
 -- limited to a couple of messages an hour — neither is workable for seeding.
 --
--- Inserting into auth.users alone is not enough: password sign-in resolves the
--- account through auth.identities, so a user without an identity row exists but
--- can never log in. That row is the part that is easy to miss.
+-- Two details bite anyone hand-writing these rows:
+--
+--   1. Password sign-in resolves the account through auth.identities. A user
+--      without an identity row exists but can never log in.
+--   2. The token columns must be '' and not NULL. Supabase's auth service reads
+--      them into plain strings, and a NULL fails that read — which surfaces as
+--      "Database error querying schema" on every sign-in attempt, an error that
+--      says nothing about the actual cause.
 
 create or replace function pg_temp.seed_user(
   email text,
@@ -28,14 +33,18 @@ begin
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password,
     email_confirmed_at, created_at, updated_at,
-    raw_app_meta_data, raw_user_meta_data
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, recovery_token, email_change,
+    email_change_token_new, email_change_token_current,
+    phone_change, phone_change_token, reauthentication_token
   ) values (
     '00000000-0000-0000-0000-000000000000',
     user_id, 'authenticated', 'authenticated', email,
     extensions.crypt(password, extensions.gen_salt('bf')),
     now(), now(), now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
-    jsonb_build_object('full_name', full_name, 'role', role)
+    jsonb_build_object('full_name', full_name, 'role', role),
+    '', '', '', '', '', '', '', ''
   );
 
   insert into auth.identities (
