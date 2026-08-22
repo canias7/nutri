@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { MeasurementsPanel } from '@/components/measurements/measurements-panel'
-import { CoachLinkForm, ProfileForm } from '@/components/profile/profile-form'
+import { CoachCard, ProfileForm } from '@/components/profile/profile-form'
 import { DeleteAccount } from '@/components/profile/delete-account'
 import { UnitToggle } from '@/components/units/unit-provider'
 import { requireClient } from '@/lib/auth/session'
@@ -45,7 +45,7 @@ export default async function ProfilePage() {
         </p>
       </header>
 
-      <CoachLinkForm coachName={coachName} />
+      <CoachCard coachName={coachName} />
 
       <ProfileForm fullName={viewer.profile.full_name} client={client} />
 

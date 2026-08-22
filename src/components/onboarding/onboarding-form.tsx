@@ -21,28 +21,6 @@ export function OnboardingForm() {
       <FormMessage>{state.message}</FormMessage>
 
       <Section
-        title="Your nutritionist"
-        description="Enter the code your specialist gave you. You can add it later instead."
-      >
-        <Field
-          label="Invite code"
-          htmlFor="inviteCode"
-          hint="Optional — leave blank if you don't have one yet."
-          errors={errors('inviteCode')}
-        >
-          <Input
-            id="inviteCode"
-            name="inviteCode"
-            placeholder="e.g. morgan_coach"
-            defaultValue={value('inviteCode')}
-            invalid={Boolean(errors('inviteCode'))}
-            spellCheck={false}
-            autoCapitalize="none"
-          />
-        </Field>
-      </Section>
-
-      <Section
         title="Biometrics"
         description="Your specialist needs these to work out individual targets."
       >

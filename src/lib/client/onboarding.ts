@@ -10,8 +10,6 @@ const optionalNumber = z
   })
 
 export const onboardingSchema = z.object({
-  inviteCode: z.string().trim().toLowerCase().optional(),
-
   age: optionalNumber.refine(
     (value) => value === undefined || (value >= 1 && value <= 130),
     { message: 'Enter an age between 1 and 130' },

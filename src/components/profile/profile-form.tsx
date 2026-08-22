@@ -6,7 +6,7 @@ import { Field, FormMessage, Input, Textarea } from '@/components/form-fields'
 import { SubmitButton } from '@/components/submit-button'
 import { LengthInput } from '@/components/units/length-input'
 import { WeightInput } from '@/components/units/weight-input'
-import { linkCoach, updateProfile } from '@/lib/client/profile'
+import { updateProfile } from '@/lib/client/profile'
 import { idleFormState } from '@/lib/forms'
 import type { ClientRow } from '@/lib/auth/session'
 
@@ -29,57 +29,28 @@ function Saved({ message }: { message?: string }) {
   )
 }
 
-export function CoachLinkForm({ coachName }: { coachName: string | null }) {
-  const [state, action] = useActionState(linkCoach, idleFormState)
-
-  if (coachName && state.status === 'idle' && !state.message) {
-    return (
-      <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-        <h2 className="mb-1 font-semibold">Your nutritionist</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          You are linked to{' '}
-          <span className="font-semibold text-slate-800 dark:text-slate-100">
-            {coachName}
-          </span>
-          . They can read your diary and write your recommendations.
-        </p>
-      </div>
-    )
-  }
-
+/**
+ * Who reads this diary. There is one nutritionist for the whole practice, so
+ * this is a statement rather than a choice — every client is attached to them
+ * on sign-up, and there was never a second specialist to pick between.
+ */
+export function CoachCard({ coachName }: { coachName: string | null }) {
   return (
-    <form
-      action={action}
-      className="flex flex-col gap-4 rounded-2xl border border-black/10 p-5 dark:border-white/10"
-    >
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-semibold">Your nutritionist</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {coachName
-            ? 'Entering a new code moves your diary to a different specialist.'
-            : 'Not linked yet. Enter the code your specialist gave you.'}
-        </p>
-      </div>
-
-      {state.status === 'error' ? <FormMessage>{state.message}</FormMessage> : null}
-      <Saved message={state.status === 'idle' ? state.message : undefined} />
-
-      <Field label="Invite code" htmlFor="inviteCode" errors={state.fieldErrors?.inviteCode}>
-        <Input
-          id="inviteCode"
-          name="inviteCode"
-          placeholder="e.g. morgan_coach"
-          defaultValue={state.values?.inviteCode}
-          invalid={Boolean(state.fieldErrors?.inviteCode)}
-          spellCheck={false}
-          autoCapitalize="none"
-        />
-      </Field>
-
-      <SubmitButton pendingLabel="Linking…" variant="ghost">
-        Link my diary
-      </SubmitButton>
-    </form>
+    <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
+      <h2 className="mb-1 font-semibold">Your nutritionist</h2>
+      <p className="text-sm text-slate-600 dark:text-slate-400">
+        {coachName ? (
+          <>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {coachName}
+            </span>{' '}
+            reads your diary and writes your recommendations.
+          </>
+        ) : (
+          'Your diary is being read as soon as there is somebody on the other end. Keep logging in the meantime — nothing is lost.'
+        )}
+      </p>
+    </div>
   )
 }
 

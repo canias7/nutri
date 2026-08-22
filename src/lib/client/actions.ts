@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/server'
 import { onboardingSchema } from './onboarding'
 
 const TEXT_FIELDS = [
-  'inviteCode',
   'age',
   'gender',
   'heightCm',
@@ -38,24 +37,8 @@ export async function completeOnboarding(
   const supabase = await createClient()
   const input = parsed.data
 
-  // Link to a coach first: if the code is wrong the user should be able to fix
-  // it without having lost the rest of their answers.
-  if (input.inviteCode) {
-    const { error } = await supabase.rpc('link_nutritionist', {
-      code: input.inviteCode,
-    })
-
-    if (error) {
-      return {
-        status: 'error',
-        fieldErrors: {
-          inviteCode: ['That invite code was not found. Check it with your nutritionist.'],
-        },
-        values,
-      }
-    }
-  }
-
+  // No code to redeem: there is one nutritionist for the practice, and clients
+  // are attached to them when the account is made.
   const { error } = await supabase
     .from('clients')
     .update({

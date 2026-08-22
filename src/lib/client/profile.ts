@@ -9,9 +9,9 @@ import { createClient } from '@/lib/supabase/server'
 
 import { onboardingSchema } from './onboarding'
 
-// The same answers as onboarding, minus the invite code, which is its own action
-// because linking is a different kind of change from editing your own details.
-const profileSchema = onboardingSchema.omit({ inviteCode: true }).extend({
+// The same answers as onboarding, plus the name, which onboarding takes at
+// sign-up instead.
+const profileSchema = onboardingSchema.extend({
   fullName: z.string().trim().min(1, 'Please enter your name').max(120),
 })
 
@@ -77,42 +77,4 @@ export async function updateProfile(
   revalidatePath('/profile')
   revalidatePath('/dashboard')
   return { status: 'idle', message: 'Saved.' }
-}
-
-export async function linkCoach(
-  _previous: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const values = { inviteCode: field(formData, 'inviteCode').toLowerCase() }
-  if (!values.inviteCode) {
-    return {
-      status: 'error',
-      fieldErrors: { inviteCode: ['Enter the code your nutritionist gave you.'] },
-      values,
-    }
-  }
-
-  await requireClient()
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.rpc('link_nutritionist', {
-    code: values.inviteCode,
-  })
-
-  if (error) {
-    return {
-      status: 'error',
-      fieldErrors: {
-        inviteCode: ['That code was not found. Check it with your nutritionist.'],
-      },
-      values,
-    }
-  }
-
-  revalidatePath('/profile')
-  revalidatePath('/dashboard')
-  return {
-    status: 'idle',
-    message: `Linked to ${data?.[0]?.full_name ?? 'your nutritionist'}.`,
-  }
 }

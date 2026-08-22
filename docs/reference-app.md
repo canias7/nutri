@@ -94,6 +94,14 @@ something else on purpose, so the difference does not keep getting read as a gap
 - **Clients only.** Public sign-up creates clients; nutritionist accounts are
   provisioned against the database. Anyone able to register themselves as a
   specialist could start collecting clients.
+- **One nutritionist, everybody attached to them.** The reference is a directory
+  of specialists, each with an invite code their clients type in. This practice
+  has one person seeing everyone, so the code decided nothing and is gone from
+  both sign-up and the profile — clients are attached when the account is made.
+  `private.the_nutritionist()` picks the oldest nutritionist profile, so adding a
+  second account later cannot silently reassign the whole client list. The column
+  and the linking RPC stay: whoever runs the practice is a row, not a constant,
+  which is what the admin portal will want.
 - **No demo login.** One click into somebody's health diary is a liability, not
   a feature.
 - **English only.** The reference defaults to Russian with English available.
