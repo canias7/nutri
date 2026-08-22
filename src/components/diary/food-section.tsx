@@ -78,6 +78,7 @@ export function FoodSection({ date, meals }: { date: string; meals: LogMeal[] })
       ref={section}
       title="Food"
       description="Everything you ate today, in the order you ate it."
+      hideSavedBadge
       date={date}
       action={saveFood}
     >

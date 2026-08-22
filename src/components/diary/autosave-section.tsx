@@ -43,6 +43,7 @@ export function AutosaveSection({
   date,
   action,
   children,
+  hideSavedBadge,
   ref,
 }: {
   title: string
@@ -50,6 +51,11 @@ export function AutosaveSection({
   date: string
   action: (state: SaveState, formData: FormData) => Promise<SaveState>
   children: ReactNode
+  /**
+   * Drops the "Saved" badge once a save lands. Failures and work in progress
+   * still show — it is the badge that sits there afterwards that is noise.
+   */
+  hideSavedBadge?: boolean
   /**
    * Exposes a save, for a section whose shape can change without any field
    * changing — removing a row leaves nothing behind to fire an onChange.
@@ -126,7 +132,12 @@ export function AutosaveSection({
             <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
           ) : null}
         </div>
-        <SaveStatus pending={pending} dirty={dirty} state={state} />
+        <SaveStatus
+          pending={pending}
+          dirty={dirty}
+          state={state}
+          hideSaved={hideSavedBadge}
+        />
       </header>
 
       <form
@@ -153,10 +164,12 @@ function SaveStatus({
   pending,
   dirty,
   state,
+  hideSaved,
 }: {
   pending: boolean
   dirty: boolean
   state: SaveState
+  hideSaved?: boolean
 }) {
   if (state.status === 'error') {
     return (
@@ -168,7 +181,7 @@ function SaveStatus({
 
   if (pending) return <Badge tone="muted">Saving…</Badge>
   if (dirty) return <Badge tone="muted">Unsaved</Badge>
-  if (state.status === 'saved') return <Badge tone="good">Saved</Badge>
+  if (state.status === 'saved' && !hideSaved) return <Badge tone="good">Saved</Badge>
   return null
 }
 
