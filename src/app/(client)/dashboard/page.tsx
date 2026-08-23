@@ -61,7 +61,9 @@ export default async function DashboardPage() {
   const baseline = profileStart ?? weighed[0]?.kg ?? null
 
   return (
-    <div className="flex flex-col gap-6">
+    // The one client page that earns the extra width on a large screen: the two
+    // charts below are read against each other. The shell watches for this.
+    <div data-wide className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Hi {firstName}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
