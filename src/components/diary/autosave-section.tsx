@@ -148,9 +148,9 @@ export function AutosaveSection({
   // is no longer mounted.
   useEffect(() => clearTimer, [clearTimer])
 
-  // Computed, not rendered as <SaveStatus/>: the row falls back to its own pill
-  // when this is absent, and a JSX element is always truthy — passing one meant
-  // every row showed an empty badge and never its own state.
+  // Computed, not rendered as <SaveStatus/>: the row shows nothing at all when
+  // this is absent, and a JSX element is always truthy — a component here would
+  // put an empty badge on every row forever.
   const saveNote =
     state.status === 'error' ? (
       <span role="alert" className="shrink-0 text-xs font-semibold text-red-600 dark:text-red-400">

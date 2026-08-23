@@ -1,13 +1,14 @@
 /**
  * What a day still needs, and which section needs it.
  *
- * Post used to hold these rules on its own. Once the sections collapsed into a
- * list, the rows had to say the same thing on their own faces — and two copies
- * of "a day is finished when…" is how a row comes to read Done under a Post
- * that refuses. So the rules live here and both read them.
+ * Post is the only thing that says what a day is still short of, and it says it
+ * once, in a sentence: "Still to fill in: wake-up time, morning weight and what
+ * you ate." The rows themselves keep no score — they take one thing from here,
+ * `optional`, which decides whether the title wears the red star.
  *
- * The wording is Post's, because Post is where it is read as a sentence:
- * "Still to fill in: wake-up time, morning weight and what you ate."
+ * The rules live in one place all the same. A row starred as required under a
+ * Post that would accept the day is the same contradiction as a row reading Done
+ * under a Post that refuses.
  */
 
 export type SectionKey =

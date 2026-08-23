@@ -33,14 +33,15 @@ export function DiaryRow({
   title: string
   /** What is already in the section, shown while it is closed. */
   summary?: ReactNode
+  /** Read only for whether the section is one the diary asks for — that is
+      what puts the star beside the title. Nothing here counts what is left. */
   need: SectionNeed
-  /** The section's own save state, which outranks the pill when it has news. */
+  /** The section's own save state, shown only while it has something to say. */
   status?: ReactNode
   defaultOpen?: boolean
   children: ReactNode
 }) {
   const required = !need.optional
-  const done = need.missing.length === 0
 
   return (
     <details
@@ -67,9 +68,11 @@ export function DiaryRow({
           ) : null}
         </span>
 
-        {/* The save state when there is one to report, otherwise how much of the
-            section is left. Two badges side by side would be one too many. */}
-        {status ?? <Pill need={need} done={done} />}
+        {/* Only the section's own save state, and only while it has news.
+            Nothing here scores the row: a diary that grades you out of nine
+            invites filling boxes rather than answering them. What is still
+            missing is Post's job to say, once, in a sentence. */}
+        {status}
 
         <svg
           viewBox="0 0 24 24"
@@ -87,30 +90,5 @@ export function DiaryRow({
 
       <div className="px-4 pb-4">{children}</div>
     </details>
-  )
-}
-
-/** Done, what is left, or nothing to do. */
-function Pill({ need, done }: { need: SectionNeed; done: boolean }) {
-  if (need.optional && done) {
-    return (
-      <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-white/10 dark:text-slate-400">
-        Optional
-      </span>
-    )
-  }
-
-  if (done) {
-    return (
-      <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
-        Done
-      </span>
-    )
-  }
-
-  return (
-    <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-500">
-      {need.missing.length === 1 ? '1 to fill' : `${need.missing.length} to fill`}
-    </span>
   )
 }
